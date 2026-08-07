@@ -2,7 +2,6 @@
 class_name ImagePreview
 extends Control
 
-
 @onready var name_label: Label = $main/name_label
 
 @onready var image_rect: TextureRect = $main/zoomable_image
@@ -97,7 +96,18 @@ func refresh() -> void:
 			path_label.focus_mode = Control.FOCUS_NONE
 			path_label.mouse_default_cursor_shape = Control.CURSOR_ARROW
 
-	texture = load(value) if file_exists else null
+	if not file_exists:
+		texture = null
+		return
+
+	elif ResourceLoader.exists(value, "Texture2D"):
+		texture = ResourceLoader.load(value, "Texture2D")
+
+	else:
+		var image := Image.new()
+		image.load(value)
+		texture = ImageTexture.new()
+		texture.set_image(image)
 
 
 func clear() -> void:
