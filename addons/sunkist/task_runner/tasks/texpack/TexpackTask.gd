@@ -152,7 +152,7 @@ func _reset() -> void:
 	$v_box_container/content/previews/source.visible = true
 
 	for child in $v_box_container/content/previews/targets.get_children():
-		child.queue_free()
+		child.queue_free.call_deferred()
 	target_paths.clear()
 
 var target_paths: PackedStringArray

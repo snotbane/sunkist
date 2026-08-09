@@ -55,7 +55,7 @@ func _exit_tree() -> void:
 
 	if main == null: return
 
-	main.queue_free()
+	main.queue_free.call_deferred()
 	main = null
 
 

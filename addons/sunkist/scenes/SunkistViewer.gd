@@ -21,7 +21,7 @@ func edit(__resource__: Object) -> void:
 	resource = __resource__
 
 	for child in grid.get_children():
-		child.queue_free()
+		child.queue_free.call_deferred()
 
 	for i in resource.textures.size():
 		var j := i - 1 if i & 1 else i + 1

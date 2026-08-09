@@ -33,14 +33,10 @@ signal stopped
 
 var root: TreeItem
 
-var _tasks: Array[Node]
-var tasks: Array[Node]:
-	get:
-		if TaskContainer.inst: _tasks = TaskContainer.inst.get_children()
-		return _tasks
+var tasks: Array[Node]
 
 var task_count: int:
-	get: return _tasks.size()
+	get: return tasks.size()
 
 var task_items: Dictionary
 
@@ -71,6 +67,10 @@ func _ready() -> void:
 	set_column_title(BUTTONS, "Actions")
 
 	set_drag_forwarding(_get_drag_data, _can_drop_data, _drop_data)
+
+	await get_tree().process_frame
+
+	tasks = TaskContainer.inst.get_children()
 
 
 func _process(delta: float) -> void:
@@ -156,7 +156,7 @@ func refresh_items() -> void:
 	task_items.clear()
 	root = create_item()
 	for task in tasks:
-		if task.is_queued_for_deletion(): continue
+		if task == null or task.is_queued_for_deletion(): continue
 		add_task_item(task)
 
 
@@ -171,6 +171,7 @@ func find_task(item: TreeItem) -> Task:
 #region Item Manipulation
 
 func add_task(task: Task) -> TreeItem:
+	tasks.push_back(task)
 	# task.tree_exited.connect(task_items.erase.bind(task))
 	task.comment_changed.connect(refresh_task_comment.bind(task))
 	task.status_changed.connect(refresh_task_status.bind(task))
@@ -211,7 +212,9 @@ func remove_task(task: Task) -> void:
 
 	if TaskContainer.inst.current_task == task:
 		TaskContainer.inst.current_task = null
-	task.queue_free()
+
+	tasks.erase(task)
+
 	refresh_items()
 
 
@@ -221,7 +224,7 @@ func remove_item(item: TreeItem) -> void:
 
 func remove_all_tasks() -> void:
 	for task in tasks:
-		task.queue_free()
+		remove_task(task)
 	refresh_items()
 
 
