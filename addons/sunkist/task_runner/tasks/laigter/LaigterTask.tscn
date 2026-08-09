@@ -4,48 +4,46 @@
 [ext_resource type="Script" uid="uid://pbokify1mr5k" path="res://addons/sunkist/task_runner/tasks/laigter/LaigterTask.gd" id="2_o230u"]
 [ext_resource type="PackedScene" uid="uid://3djnsrgpqbb1" path="res://addons/sunkist/scenes/ImagePreview.tscn" id="3_niia0"]
 
-[node name="LaigterTask" instance=ExtResource("1_8wuje")]
+[node name="LaigterTask" unique_id=1312519783 instance=ExtResource("1_8wuje")]
 script = ExtResource("2_o230u")
-laigter_path = "/home/snotbane/Desktop/Laigter-x86_64.AppImage"
+laigter_path = "/home/snotbane/Applications/Laigter/Laigter-x86_64.AppImage"
 preset_path = ""
-source_dir = ""
-target_dir = ""
-target_suffix = "_n"
-filter_include = ""
-filter_exclude = ""
-overwrite = true
+python_venv_path = "res://addons/sunkist/.venv"
+itinerary = null
 comment = "Python task: "
 
-[node name="split" type="HSplitContainer" parent="v_box_container/content" index="0"]
+[node name="split" type="HSplitContainer" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=2118010221]
 layout_mode = 2
 dragging_enabled = false
 dragger_visibility = 2
 
-[node name="source" type="VBoxContainer" parent="v_box_container/content/split" index="0"]
+[node name="source" type="VBoxContainer" parent="v_box_container/content/split" index="0" unique_id=773116089]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="label" type="Label" parent="v_box_container/content/split/source" index="0"]
+[node name="label" type="Label" parent="v_box_container/content/split/source" index="0" unique_id=496958581]
 layout_mode = 2
 text = "Current"
 horizontal_alignment = 1
 
-[node name="preview" parent="v_box_container/content/split/source" index="1" instance=ExtResource("3_niia0")]
+[node name="preview" parent="v_box_container/content/split/source" index="1" unique_id=127114303 instance=ExtResource("3_niia0")]
 layout_mode = 2
-size_flags_vertical = 3
 
-[node name="target" type="VBoxContainer" parent="v_box_container/content/split" index="1"]
+[node name="target" type="VBoxContainer" parent="v_box_container/content/split" index="1" unique_id=508875766]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="label" type="Label" parent="v_box_container/content/split/target" index="0"]
+[node name="label" type="Label" parent="v_box_container/content/split/target" index="0" unique_id=2061460019]
 layout_mode = 2
 text = "Previous Result"
 horizontal_alignment = 1
 
-[node name="preview" parent="v_box_container/content/split/target" index="1" instance=ExtResource("3_niia0")]
+[node name="preview" parent="v_box_container/content/split/target" index="1" unique_id=784015841 instance=ExtResource("3_niia0")]
 layout_mode = 2
-size_flags_vertical = 3
 
-[node name="stats" parent="v_box_container/results/progress_bar/margin_container" index="1"]
-visible = true
+[node name="execute" parent="v_box_container/results" parent_id_path=PackedInt32Array(1635354410) index="0" unique_id=1151996094]
+tooltip_text = "Can't run this task due to errors:
+Filepath 'laigter_path' cannot be blank.
+Filepath 'preset_path' cannot be blank.
+Directory 'source_dir' cannot be blank."
+disabled = true

@@ -1,3 +1,4 @@
+@abstract
 @tool
 class_name PythonTask
 extends Task
@@ -27,6 +28,20 @@ static func value_as_python_argument(value: Variant) -> String:
 
 		TaskRunner.inst.python_venv_path = value
 
+@export var itinerary: TaskItinerary:
+	set(value):
+		if itinerary == value: return
+
+		if itinerary:
+			itinerary.changed.disconnect(validate_args)
+
+		refresh_comment_if_default()
+		itinerary = value
+		validate_args()
+
+		if itinerary:
+			itinerary.changed.connect(validate_args)
+
 
 # @export_tool_button("Install Python Venv") var install_venv_button := TaskRunner.inst.install_venv_button
 
@@ -38,9 +53,6 @@ var python_exe_path: String:
 var python_script_path: String:
 	get: return _get_python_script_path()
 
-func _get_python_script_path() -> String:
-	assert(false); return ""
-
 
 var bus_dir: DirAccess
 
@@ -51,8 +63,27 @@ var bus_path: String
 var thread: Thread
 
 
+@abstract
+func _get_python_script_path() -> String
+
+
+@abstract
+func _get_python_arguments() -> Array
+
+
 func _get_default_comment() -> String:
-	return "Python task: " + super._get_default_comment()
+	return "%s :: %s" % [super._get_default_comment(), itinerary]
+
+
+func _save_args(result: Dictionary) -> void:
+	result.merge({
+		&"itinerary": itinerary.save_args()
+	})
+
+
+func _load_args(data: Dictionary) -> void:
+	itinerary = TaskItinerary.new()
+	itinerary.load_args(data[&"itinerary"])
 
 
 func get_python_arguments() -> PackedStringArray:
@@ -63,9 +94,6 @@ func get_python_arguments() -> PackedStringArray:
 		return PythonTask.value_as_python_argument(e)
 	))
 	return result
-
-
-func _get_python_arguments() -> Array: return []
 
 
 func _exit_tree() -> void:

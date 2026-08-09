@@ -2,14 +2,13 @@ import argparse
 import configparser
 import os
 import re
-import shutil
-import subprocess
 import sys
-import time
-from PIL import Image
+from PIL import Image, ImageColor
+
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
 progress: int = 0
+
 
 def str_to_bool(value: str) -> bool:
     if isinstance(value, bool):
@@ -94,6 +93,10 @@ class Itinerary:
 			return []
 
 
+def str_to_itinerary(value: str) -> Itinerary:
+	return Itinerary(value)
+
+
 class TargetImage:
 	def __init__(self, source, target_dir):
 		self.source = source
@@ -106,10 +109,6 @@ class TargetImage:
 		)
 
 		self.path = os.path.join(target_dir, self.target_name + self.ext)
-
-		self.temp_source = os.path.join(os.path.dirname(args.bus_path), os.path.basename(self.source))
-		self.temp_sdf = os.path.join(os.path.dirname(args.bus_path), f"{self.source_name}_s{self.ext}")
-		self.temp_normal = os.path.join(os.path.dirname(args.bus_path), f"{self.source_name}_n{self.ext}")
 
 
 	def __str__(self):
@@ -139,39 +138,27 @@ class TargetImage:
 
 
 	def _process(self):
-		shutil.copyfile(self.source, self.temp_source)
-
-		process = subprocess.Popen(executable=args.laigter_path, args=["--no-gui", "--diffuse", self.temp_source, "--preset", args.laigter_preset, "--normal"], shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-
-		while process.poll() is None:
-			if bus_get("input", "stop"):
-				process.kill()
-				sys.exit(2)
-			time.sleep(0.25)
-
-		if not os.path.exists(self.temp_normal): raise Exception(f"Normal file '{self.temp_normal}' does not exist and/or was not created.")
-		image = Image.open(self.temp_normal)
-
-		source : Image = Image.open(self.source).convert("RGBA")
-		image.putalpha(source.getchannel("A"))
-		image.save(self.path)
+		pass
 
 
 	def _cleanup(self):
-		if os.path.exists(self.temp_source):
-			os.remove(self.temp_source)
-
-		if os.path.exists(self.temp_sdf):
-			os.remove(self.temp_sdf)
-
-		if os.path.exists(self.temp_normal) and self.temp_normal != self.path:
-			os.remove(self.temp_normal)
+		pass
 
 
-def str_to_itinerary(value: str) -> Itinerary:
-	return Itinerary(value)
 
+class PaletteRemap:
+	def __init__(self, from_str: str) -> None:
+		splits = from_str[1:].split("#")
 
+		self.colors = []
+		for i in range(len(splits) // 2):
+			self.colors[i] = (
+				ImageColor.getrgb(splits[i * 2]),
+				ImageColor.getrgb(splits[i * 2 + 1])
+			)
+
+def str_to_palette_remap(value: str) -> PaletteRemap:
+	return PaletteRemap(value)
 
 def main():
 	global progress
@@ -193,8 +180,8 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
 	parser.add_argument("itinerary", type=str_to_itinerary)
-	parser.add_argument("laigter_path", type=str)
-	parser.add_argument("laigter_preset", type=str)
+	parser.add_argument("palettes", type=str_to_palette_remap)
+	parser.add_argument("border_size", type=int)
 	args = parser.parse_args()
 
 	bus_path = args.bus_path

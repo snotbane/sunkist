@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://dtq6dp72m4wef"]
+
+[ext_resource type="PackedScene" uid="uid://cpw2roduamin5" path="res://addons/sunkist/task_runner/tasks/Task.tscn" id="1_yihp1"]
+[ext_resource type="Script" uid="uid://drmkg8u4atss5" path="res://addons/sunkist/task_runner/tasks/remapper/RemapperTask.gd" id="2_60ule"]
+[ext_resource type="PackedScene" uid="uid://3djnsrgpqbb1" path="res://addons/sunkist/scenes/ImagePreview.tscn" id="3_8in6w"]
+
+[node name="task" unique_id=181984087 instance=ExtResource("1_yihp1")]
+script = ExtResource("2_60ule")
+itinerary = null
+python_venv_path = "res://addons/sunkist/.venv"
+comment = "Python task: "
+
+[node name="split" type="HSplitContainer" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=245009262]
+layout_mode = 2
+dragging_enabled = false
+dragger_visibility = 2
+
+[node name="source" type="VBoxContainer" parent="v_box_container/content/split" index="0" unique_id=199702874]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="label" type="Label" parent="v_box_container/content/split/source" index="0" unique_id=524410279]
+layout_mode = 2
+text = "Current"
+horizontal_alignment = 1
+
+[node name="preview" parent="v_box_container/content/split/source" index="1" unique_id=29627641 instance=ExtResource("3_8in6w")]
+layout_mode = 2
+
+[node name="target" type="VBoxContainer" parent="v_box_container/content/split" index="1" unique_id=1461169766]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="label" type="Label" parent="v_box_container/content/split/target" index="0" unique_id=1581498032]
+layout_mode = 2
+text = "Previous Result"
+horizontal_alignment = 1
+
+[node name="preview" parent="v_box_container/content/split/target" index="1" unique_id=324179026 instance=ExtResource("3_8in6w")]
+layout_mode = 2
+
+[node name="execute" parent="v_box_container/results" parent_id_path=PackedInt32Array(1635354410) index="0" unique_id=1151996094]
+tooltip_text = "Can't run this task due to errors:
+Itinerary is null."
+disabled = true

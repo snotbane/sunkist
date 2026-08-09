@@ -18,6 +18,7 @@
 [ext_resource type="Resource" uid="uid://b8o7rpmif1hy8" path="res://addons/sunkist/task_runner/tasks/laigter/laigter.tres" id="16_qv03b"]
 [ext_resource type="Resource" uid="uid://f2w8bttuc4oc" path="res://addons/sunkist/task_runner/tasks/sunkist/sunkist_assembly_task.tres" id="17_qjehu"]
 [ext_resource type="Resource" uid="uid://bdrvf6blp42h2" path="res://addons/sunkist/task_runner/tasks/optipng/optipng.tres" id="18_m20k4"]
+[ext_resource type="Resource" uid="uid://3fhy7na0ubj1" path="res://addons/sunkist/task_runner/tasks/remapper/remapper.tres" id="19_dda8a"]
 [ext_resource type="Script" uid="uid://6eldrawh61aa" path="res://addons/sunkist/task_runner/TaskContainer.gd" id="19_g0as0"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_xs2sm"]
@@ -194,7 +195,6 @@ icon = ExtResource("5_ug6gf")
 
 [node name="file_dialog" type="FileDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/save" unique_id=1169001965]
 oversampling_override = 1.0
-display_mode = 1
 filters = PackedStringArray("*.json")
 use_native_dialog = true
 
@@ -213,7 +213,6 @@ icon = ExtResource("6_t80lc")
 [node name="file_dialog" type="FileDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/load/overwrite" unique_id=581640602]
 title = "Open a File"
 file_mode = 0
-display_mode = 1
 filters = PackedStringArray("*.json")
 use_native_dialog = true
 
@@ -226,7 +225,6 @@ icon = ExtResource("7_kuq7v")
 [node name="file_dialog" type="FileDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/load/append" unique_id=851303745]
 title = "Open a File"
 file_mode = 0
-display_mode = 1
 filters = PackedStringArray("*.json")
 use_native_dialog = true
 
@@ -277,7 +275,7 @@ script = ExtResource("12_fdhiv")
 layout_mode = 2
 alignment = 1
 script = ExtResource("13_8pjc0")
-templates = Array[ExtResource("14_ufycr")]([ExtResource("15_a4t1i"), ExtResource("16_qv03b"), ExtResource("17_qjehu"), ExtResource("18_m20k4")])
+templates = Array[ExtResource("14_ufycr")]([ExtResource("15_a4t1i"), ExtResource("19_dda8a"), ExtResource("16_qv03b"), ExtResource("17_qjehu"), ExtResource("18_m20k4")])
 
 [node name="task_container" type="TabContainer" parent="tab_container/main_split" unique_id=1975157183]
 layout_mode = 2

@@ -258,6 +258,13 @@ func validate_non_empty_string(s: String, var_name: String) -> void:
 		_errors.push_back("'%s' cannot be blank." % var_name)
 
 
+func validate_itinerary(itinerary: TaskItinerary) -> void:
+	if itinerary:
+		_errors.append_array(itinerary.validate())
+	else:
+		_errors.push_back("Itinerary is null.")
+
+
 func validate_dir_contains(dir: String, path: String, require_inside: bool) -> void:
 	if SunkistUtils.is_folder_inside_other(dir, path) != require_inside:
 		_errors.push_back("The file or folder '%s' must %sbe contained inside directory '%s'." % [path, "" if require_inside else "NOT ", dir])
