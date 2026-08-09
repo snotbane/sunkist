@@ -1,15 +1,18 @@
 import argparse
 import configparser
 import os
+import re
 import subprocess
 import sys
 import time
 
-files_completed = 0
-bytes_reduced = 0
+SUPPORTED_EXTS = [".png"]
+attempts: int = 0
+progress: int = 0
+bytes_reduced: int = 0
 
 
-def str2bool(value: str) -> bool:
+def str_to_bool(value: str) -> bool:
     if isinstance(value, bool):
         return value
     val = value.lower()
@@ -27,10 +30,9 @@ def bus_get(section: str, key: str):
 
 	result = bus.get(section, key)
 	try:
-		b = str2bool(result)
-		return b
-	except:	pass
-	return result
+		return str_to_bool(result)
+	except:
+		return result
 
 
 def bus_set(section: str, key: str, value):
@@ -42,68 +44,149 @@ def bus_set(section: str, key: str, value):
 		bus.write(file, space_around_delimiters=False)
 
 
-def get_png_files(folder, result = []):
-	for file in os.listdir(folder):
-		full_path = os.path.join(folder, file)
-		if os.path.isdir(full_path):
-			result = get_png_files(full_path, result)
-		elif file.lower().endswith(".png"):
-			result.append(full_path)
-	return result
+class Itinerary:
+	def __init__(self, from_str: str) -> None:
+		splits = from_str.split("\t")
+
+		self.source = splits[0]
+		self.target = splits[1]
+		self.include = re.compile(splits[2]) if splits[2] != "" else None
+		self.exclude = re.compile(splits[3]) if splits[3] != "" else None
+		self.rename_filter = re.compile(splits[4]) if splits[4] != "" else None
+		self.rename_replace = splits[5]
+		self.overwrite = str_to_bool(splits[6])
+
+		if self.target == "":
+			self.target = self.source
 
 
-def compress_png_file(target):
-	global bytes_reduced
-	global files_completed
-	try:
-		bus_set("output", "image_preview", f"\"{target}\"")
+	def get_targets(self):
+		if os.path.isfile(self.source):
+			return [TargetImage(
+				self.source,
+				self.target
+			)]
 
-		file_size_before = os.path.getsize(target)
+		elif os.path.isdir(self.source):
+			result = []
 
-		process = subprocess.Popen([args.optipng_path, "-o7", "-out", target, target], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+			for dirpath, _, files in os.walk(self.source):
+				for file in files:
+					subdirpath = dirpath[(len(self.source) + 1):]
+					name, ext = os.path.splitext(file)
+					if not ext.lower() in SUPPORTED_EXTS: continue
+
+					if self.include != None and re.search(self.include, name) == None: continue
+					if self.exclude != None and re.search(self.exclude, name) != None: continue
+
+					image = TargetImage(
+						os.path.join(dirpath, file),
+						os.path.join(self.target, subdirpath) if subdirpath != "" else self.target
+					)
+					if not self.overwrite and os.path.exists(image.path): continue
+
+					result.append(image)
+
+			return result
+
+		else:
+			sys.stderr.write("Input path is not a valid file nor directory.")
+			sys.exit(7) ## ERR_FILE_NOT_FOUND
+			return []
+
+
+def str_to_itinerary(value: str) -> Itinerary:
+	return Itinerary(value)
+
+
+class TargetImage:
+	def __init__(self, source, target_dir):
+		self.source = source
+		self.source_name, self.ext = os.path.splitext(os.path.basename(self.source))
+
+		self.target_name = (
+			re.sub(args.itinerary.rename_filter, args.itinerary.rename_replace, self.source_name)
+			if args.itinerary.rename_filter != None
+			else (self.source_name + args.itinerary.rename_replace)
+		)
+
+		self.path = os.path.join(target_dir, self.target_name + self.ext)
+
+
+	def __str__(self):
+		return self.path
+
+
+	def process(self):
+		global progress
+
+		try:
+			bus_set("output", "source_preview", f"\"{self.source}\"")
+			os.makedirs(os.path.dirname(self.path), exist_ok = True)
+
+			self._process()
+
+			# bus_set("output", "target_preview", f"\"{self.path}\"")
+
+
+		except Exception as e:
+			sys.stderr.write(f"\nError processing {self.path}: {e}")
+			# bus_set("output", "target_preview", f"\"\"")
+
+		finally:
+			progress += 1
+			bus_set("output", "progress", progress)
+
+			self._cleanup()
+
+
+
+	def _process(self):
+		global bytes_reduced
+
+		file_size_prior = os.path.getsize(self.path)
+
+		process = subprocess.Popen([args.optipng_path, "-o7", "-out", self.path, self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
 		while process.poll() is None:
 			if bus_get("input", "stop"):
 				process.kill()
-				sys.exit(2)
+				sys.exit(1)
 			time.sleep(0.25)
 
-		bytes_reduced += file_size_before - os.path.getsize(target)
+		file_size_after = os.path.getsize(self.path)
+
+		bytes_reduced += file_size_prior - file_size_after
 		bus_set("output", "bytes", bytes_reduced)
 
-		files_completed += 1
-		bus_set("output", "progress", files_completed)
-	except Exception as e:
-		sys.stderr.write(f"Error compressing \"{target}\": {e}\n")
 
-
-def main():
-	bus_set("output", "progress", 0)
-	bus_set("output", "bytes", 0)
-	if os.path.isdir(args.target):
-		files = get_png_files(args.target)
-		bus_set("output", "progress_max", len(files))
-		for file in files:
-			compress_png_file(file)
-	elif os.path.isfile(args.target):
-		bus_set("output", "progress_max", 1)
-		compress_png_file(args.target)
-	else:
-		sys.stderr.write("Input path is not a valid file nor directory.")
-		sys.exit(1)
+	def _cleanup(self):
+		pass
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
+	parser.add_argument("itinerary", type=str_to_itinerary)
+
 	parser.add_argument("optipng_path", type=str)
-	parser.add_argument("target", type=str)
+
 	args = parser.parse_args()
 
 	bus_path = args.bus_path
 	bus = configparser.ConfigParser()
 	bus.read(bus_path)
+	bus_set("output", "progress", 0)
 
-	main()
+	targets = args.itinerary.get_targets()
+	bus_set("output", "progress_max", len(targets))
+
+	for target in targets:
+		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
+		target.process()
+
+	if progress < len(targets):
+		sys.stderr.write("Not all images were successfully processed.")
+		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)

@@ -7,6 +7,7 @@ from PIL import Image, ImageColor
 
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
+attempts: int = 0
 progress: int = 0
 
 
@@ -125,15 +126,14 @@ class TargetImage:
 			self._process()
 
 			bus_set("output", "target_preview", f"\"{self.path}\"")
-			progress += 1
-			bus_set("output", "progress", progress)
-
 
 		except Exception as e:
-			sys.stderr.write(f"Error processing {self.path}: {e}")
+			sys.stderr.write(f"\nError processing {self.path}: {e}")
 			bus_set("output", "target_preview", f"\"\"")
 
 		finally:
+			progress += 1
+			bus_set("output", "progress", progress)
 			self._cleanup()
 
 
@@ -160,21 +160,6 @@ class PaletteRemap:
 def str_to_palette_remap(value: str) -> PaletteRemap:
 	return PaletteRemap(value)
 
-def main():
-	global progress
-
-	bus_set("output", "progress", 0)
-
-	targets = args.itinerary.get_targets()
-	bus_set("output", "progress_max", len(targets))
-
-	for target in targets:
-		target.process()
-
-	if progress < len(targets):
-		sys.stderr.write("Not all images were successfully processed.")
-		sys.exit(39) ## ERR_SCRIPT_FAILED
-
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
@@ -188,6 +173,16 @@ if __name__ == "__main__":
 	bus = configparser.ConfigParser()
 	bus.read(bus_path)
 
-	main()
+	bus_set("output", "progress", 0)
+
+	targets = args.itinerary.get_targets()
+	bus_set("output", "progress_max", len(targets))
+
+	for target in targets:
+		target.process()
+
+	if progress < len(targets):
+		sys.stderr.write("Not all images were successfully processed.")
+		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)

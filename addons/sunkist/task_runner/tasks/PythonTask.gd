@@ -33,14 +33,16 @@ static func value_as_python_argument(value: Variant) -> String:
 		if itinerary == value: return
 
 		if itinerary:
-			itinerary.changed.disconnect(validate_args)
+			if itinerary.changed.is_connected(validate_args):
+				itinerary.changed.disconnect(validate_args)
 
 		refresh_comment_if_default()
 		itinerary = value
 		validate_args()
 
 		if itinerary:
-			itinerary.changed.connect(validate_args)
+			if not itinerary.changed.is_connected(validate_args):
+				itinerary.changed.connect(validate_args)
 
 
 # @export_tool_button("Install Python Venv") var install_venv_button := TaskRunner.inst.install_venv_button
@@ -54,7 +56,7 @@ var python_script_path: String:
 	get: return _get_python_script_path()
 
 
-var bus_dir: DirAccess
+var temp_dir: DirAccess
 
 var bus: ConfigFile
 
@@ -86,31 +88,46 @@ func _load_args(data: Dictionary) -> void:
 	itinerary.load_args(data[&"itinerary"])
 
 
+func _validate_args() -> void:
+	validate_itinerary(itinerary)
+
+
 func get_python_arguments() -> PackedStringArray:
 	var result: PackedStringArray
 	result.push_back(PythonTask.localize_script_path(python_script_path))
 	result.push_back(ProjectSettings.globalize_path(bus_path))
+	result.push_back(itinerary.serialize())
 	result.append_array(_get_python_arguments().map(func(e: Variant) -> String:
 		return PythonTask.value_as_python_argument(e)
 	))
 	return result
 
 
-func _exit_tree() -> void:
-	bus_dir.remove(bus_path)
+func _init() -> void:
+	itinerary = TaskItinerary.new()
+	if not itinerary.changed.is_connected(validate_args):
+		itinerary.changed.connect(validate_args)
 
 
 func _ready() -> void:
 	super._ready()
 
-	bus_dir = DirAccess.open("user://")
-	bus_path = "%s%s_%s.cfg" % [
-		bus_dir.get_current_dir(),
+	var user_dir := DirAccess.open("user://")
+	if not user_dir.dir_exists("temp"):
+		user_dir.make_dir("temp")
+
+	temp_dir = user_dir.open(Task.TEMP_DIR_PATH)
+
+	bus_path = temp_dir.get_current_dir().path_join("%s_%s.cfg" % [
 		name,
 		get_instance_id()
-	]
+	])
 
 	thread = Thread.new()
+
+
+func _exit_tree() -> void:
+	temp_dir.remove(bus_path)
 
 
 func _process_running(delta: float) -> void:
@@ -126,7 +143,7 @@ func _thread_stopped() -> void:
 	var code := thread.wait_to_finish()
 
 	refresh_elements()
-	bus_dir.remove(bus_path)
+	temp_dir.remove(bus_path)
 	bus = null
 
 	finish(code)
@@ -154,9 +171,12 @@ func execute(cmd: String, args: PackedStringArray) -> int:
 static func execute_static(cmd: String, args: PackedStringArray, print_output: bool = true) -> int:
 	var output: Array
 	var result: int = OS.execute(cmd, args, output, print_output)
-	if print_output: for e in output:
-		if result == OK: print(e)
-		else: printerr(e)
+	if print_output:
+		for e in output:
+			match result:
+				ERR_SKIP: continue
+				OK: print(e)
+				_: printerr(e)
 	return result
 
 
@@ -166,8 +186,11 @@ func refresh_elements() -> void:
 
 
 func _bus_poll() -> void:
+	attempts_bar.value = bus.get_value("output", "attempts", 0)
+	attempts_bar.max_value = bus.get_value("output", "progress_max", 1)
+
 	progress_bar.value = bus.get_value("output", "progress", 0)
-	progress_bar.max_value = bus.get_value("output", "progress_max", 1)
+	progress_bar.max_value = attempts_bar.max_value
 
 	items_completed_label.text = "%s of %s completed" % [int(progress_bar.value), int(progress_bar.max_value)]
 

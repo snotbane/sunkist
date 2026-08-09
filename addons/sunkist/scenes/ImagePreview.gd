@@ -121,4 +121,8 @@ func _ready() -> void:
 func _on_path_label_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
-			EditorInterface.get_file_system_dock().navigate_to_path(value)
+			if ResourceLoader.exists(value):
+				EditorInterface.get_file_system_dock().navigate_to_path(value)
+
+			elif FileAccess.file_exists(value):
+				OS.shell_show_in_file_manager(value)

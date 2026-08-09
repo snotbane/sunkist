@@ -8,9 +8,11 @@ import time
 from PIL import Image, ImageOps
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
+attempts: int = 0
 progress: int = 0
 
-def str2bool(value: str) -> bool:
+
+def str_to_bool(value: str) -> bool:
     if isinstance(value, bool):
         return value
     val = value.lower()
@@ -28,10 +30,9 @@ def bus_get(section: str, key: str):
 
 	result = bus.get(section, key)
 	try:
-		b = str2bool(result)
-		return b
-	except:	pass
-	return result
+		return str_to_bool(result)
+	except:
+		return result
 
 
 def bus_set(section: str, key: str, value):
@@ -41,12 +42,6 @@ def bus_set(section: str, key: str, value):
 	bus.set(section, key, value)
 	with open(bus_path, 'w') as file:
 		bus.write(file, space_around_delimiters=False)
-
-
-# class Point:
-# 	def __init__(self, x: int, y: int):
-# 		self.x = x
-# 		self.y = y
 
 
 class Rect:
@@ -159,10 +154,15 @@ class SourceImage(PathedImage):
 		self.image : Image = Image.open(self.full).convert("RGBA")
 		self.bitmap : Image = bitmap
 
-		self.source_region = region if region != None else \
-			Rect(0, 0, self.image.width, self.image.height)
+		self.source_region = (
+			region
+			if region != None
+			else Rect(0, 0, self.image.width, self.image.height)
+		)
+
 		self.target_offset = (0, 0)
 		self.target_match = None
+		self.target: TargetImage
 
 	@property
 	def image_cropped(self) -> Image:
@@ -286,33 +286,57 @@ class TargetImage(PathedImage):
 		self.image.save(self.full)
 
 
-def assign_image_sources():
-	result = []
-	include = re.compile(args.filter_include)
-	exclude = re.compile(args.filter_exclude)
-	for root, _, files, in os.walk(args.source):
-		for file in files:
-			name, ext = os.path.splitext(file)
-			if not ext.lower() in SUPPORTED_EXTS: continue
-			if args.filter_include != "" and re.search(include, name) == None: continue
-			if args.filter_exclude != "" and re.search(exclude, name) != None: continue
-			try:
-				source = SourceImage(root, file)
-			except: continue
-			result.append(source)
-	return result
+class Itinerary:
+	def __init__(self, from_str: str) -> None:
+		splits = from_str.split("\t")
+
+		self.source = splits[0]
+		self.target = splits[1]
+		self.include = re.compile(splits[2]) if splits[2] != "" else None
+		self.exclude = re.compile(splits[3]) if splits[3] != "" else None
+		self.rename_filter = re.compile(splits[4]) if splits[4] != "" else None
+		self.rename_replace = splits[5]
+		self.overwrite = str_to_bool(splits[6])
+
+		if self.target == "":
+			self.target = self.source
 
 
-def assign_image_targets(sources):
-	pattern = re.compile(args.filter_separate)
-	targets_dict = dict()
-	for source in sources:
-		match_string = re.search(pattern, source.name).group()
-		if targets_dict.get(match_string) == None:
-			path = f"{args.project_name}{match_string}.png"
-			targets_dict[match_string] = TargetImage(os.path.join(args.target, "sheet"), path, args.target_format, args.island_margin)
-		source.target_match = match_string
-	return (sources, targets_dict)
+	def get_sources(self):
+		result = []
+		for dirpath, _, files, in os.walk(self.source):
+			for file in files:
+				name, ext = os.path.splitext(file)
+				if not ext.lower() in SUPPORTED_EXTS: continue
+				if self.include != None and re.search(self.include, name) == None: continue
+				if self.exclude != None and re.search(self.exclude, name) != None: continue
+
+				try:
+					source = SourceImage(dirpath, file)
+				except:
+					continue
+
+				result.append(source)
+		return result
+
+
+	def assign_sources_and_targets(self, sources) -> tuple[list[SourceImage], dict[str, TargetImage]]:
+		pattern = re.compile(args.filter_separate)
+		targets_dict = dict()
+
+		for source in sources:
+			match_string = re.search(pattern, source.name).group()
+			if targets_dict.get(match_string) == None:
+				path = f"{args.project_name}{match_string}.png"
+				targets_dict[match_string] = TargetImage(os.path.join(args.itinerary.target, "sheet"), path, args.target_format, args.island_margin)
+
+			source.target_match = match_string
+
+		return (sources, targets_dict)
+
+
+def str_to_itinerary(value: str) -> Itinerary:
+	return Itinerary(value)
 
 
 class AtlasEntry:
@@ -377,14 +401,29 @@ def assign_compo_data(atlas: dict) -> dict:
 
 	return result
 
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("bus_path", type=str)
+	parser.add_argument("itinerary", type=str_to_itinerary)
 
-def main():
-	global progress
+	parser.add_argument("project_name", type=str)
+	parser.add_argument("target_size_limit", type=int) ## TODO: implement
+	parser.add_argument("target_format", type=str)
+	parser.add_argument("filter_separate", type=str)
+	parser.add_argument("filter_composite", type=str)
+	parser.add_argument("island_crop", type=str_to_bool)
+	parser.add_argument("island_margin", type=int)
+
+	args = parser.parse_args()
+
+	bus_path = args.bus_path
+	bus = configparser.ConfigParser()
+	bus.read(bus_path)
 
 	if not (
 		args.project_name != "" and
-		os.path.exists(args.source) and
-		os.path.exists(args.target)
+		os.path.exists(args.itinerary.source) and
+		os.path.exists(args.itinerary.target)
 	):
 		sys.exit(1)
 
@@ -392,11 +431,11 @@ def main():
 	bus_set("output", "progress", progress)
 	bus_set("output", "progress_max", 1)
 
-	sources = assign_image_sources()
-	sources, targets = assign_image_targets(sources)
+	sources = args.itinerary.get_sources()
+	sources, targets = args.itinerary.get_targets(sources)
 	bus_set("output", "progress_max", len(sources))
 
-	project_json_path = os.path.join(args.target, args.project_name + ".sun")
+	project_json_path = os.path.join(args.itinerary.target, args.project_name + ".sun")
 
 	atlas_data = dict()
 
@@ -427,32 +466,5 @@ def main():
 	for k in targets.keys():
 		targets[k].save()
 
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	parser.add_argument("bus_path", type=str)
-	parser.add_argument("project_name", type=str)
-	parser.add_argument("source", type=str)
-	parser.add_argument("target", type=str)
-	parser.add_argument("target_size_limit", type=int) ## TODO: implement
-	parser.add_argument("target_format", type=str)
-	parser.add_argument("filter_include", type=str)
-	parser.add_argument("filter_exclude", type=str)
-	parser.add_argument("filter_separate", type=str)
-	parser.add_argument("filter_composite", type=str)
-	parser.add_argument("island_crop", type=str2bool)
-	parser.add_argument("island_margin", type=int)
-	args = parser.parse_args()
-
-	args.filter_include = args.filter_include[1:-1]
-	args.filter_exclude = args.filter_exclude[1:-1]
-	args.filter_separate = args.filter_separate[1:-1]
-	args.filter_composite = args.filter_composite[1:-1]
-
-	bus_path = args.bus_path
-	bus = configparser.ConfigParser()
-	bus.read(bus_path)
-
-	main()
 
 	sys.exit(0)

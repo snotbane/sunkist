@@ -25,7 +25,7 @@ const ICON_INSPECT := preload("res://addons/sunkist/ui/icons/ExternalLink.svg")
 const ICON_REJECT := preload("res://addons/sunkist/ui/icons/ImportFail.svg")
 
 
-@export var task: Task
+@export var task: PythonTask
 
 @export var old_preview: ImagePreview
 
@@ -61,13 +61,7 @@ func clear_items() -> void:
 
 
 func refresh_files() -> void:
-	source_paths = get_files(task.source_dir)
-
-	# target_paths.resize(source_paths.size())
-	# for i in target_paths.size():
-	# 	var relative_path := source_paths[i].right(source_paths[i].rfind("/"))
-	# 	target_paths[i] = task.target_dir_safe.path_join(relative_path)
-
+	source_paths = get_files(task.itinerary.source)
 	refresh_items()
 
 
@@ -82,7 +76,16 @@ func refresh_items() -> void:
 func add_path_item(path: String):
 	var result := self.create_item(root)
 	item_source_paths[result] = path
-	item_target_paths[result] = task.target_dir_safe.path_join(path.right(-task.source_dir.length()))
+
+	if task.itinerary.target.is_empty():
+		item_target_paths[result] = item_source_paths[result]
+	else:
+		var subdirpath := path.get_base_dir().right(-task.itinerary.source.length())
+		print("subdirpath : %s" % [subdirpath])
+		if subdirpath:
+			item_target_paths[result] = task.itinerary.target.path_join(subdirpath).path_join(path.get_file())
+		else:
+			item_target_paths[result] = task.itinerary.target.path_join(path.get_file())
 
 	result.add_button(BUTTONS, ICON_ACCEPT, ACCEPT)
 	result.set_button_tooltip_text(BUTTONS, ACCEPT, "Accept Changes")
@@ -97,15 +100,14 @@ func add_path_item(path: String):
 
 func open_item(item: TreeItem) -> void:
 	OS.shell_open(item_source_paths[item])
-	OS.shell_open(get_alt_path(item_source_paths[item], NEW))
+	OS.shell_open(get_temp_path(item_source_paths[item], DIFF))
+	OS.shell_open(get_temp_path(item_source_paths[item], NEW))
 
 
 func accept_item(item: TreeItem) -> void:
-	var target := FileAccess.open(item_target_paths[item], FileAccess.WRITE)
-	var new := FileAccess.open(get_alt_path(item_source_paths[item], NEW), FileAccess.READ)
+	print("item_target_paths[item] : %s" % [item_target_paths[item]])
 
-	var buffer := new.get_buffer(new.get_length())
-	target.store_buffer(buffer)
+	DirAccess.copy_absolute(get_temp_path(item_source_paths[item], NEW), item_target_paths[item])
 
 	remove_path_by_item(item)
 	refresh_items()
@@ -125,34 +127,20 @@ func reject_item(item: TreeItem) -> void:
 
 func remove_path_by_item(item: TreeItem) -> void:
 	source_paths.erase(item_source_paths[item])
-	DirAccess.remove_absolute(get_alt_path(item_source_paths[item], NEW))
-	DirAccess.remove_absolute(get_alt_path(item_source_paths[item], DIFF))
+	DirAccess.remove_absolute(get_temp_path(item_source_paths[item], NEW))
+	DirAccess.remove_absolute(get_temp_path(item_source_paths[item], DIFF))
 	item_source_paths.erase(item)
 	item_target_paths.erase(item)
 
 
 func accept_all() -> void:
 	for item in item_source_paths.keys():
-		var target := FileAccess.open(item_target_paths[item], FileAccess.WRITE)
-		var new := FileAccess.open(get_alt_path(item_source_paths[item], NEW), FileAccess.READ)
-
-		var buffer := new.get_buffer(new.get_length())
-		target.store_buffer(buffer)
-
-		remove_path_by_item(item)
-
-	refresh_files()
-	old_preview.clear()
-	diff_bitmap.clear()
+		accept_item(item)
 
 
 func reject_all() -> void:
 	for item in item_source_paths.keys():
-		remove_path_by_item(item)
-
-	refresh_files()
-	new_preview.clear()
-	diff_bitmap.clear()
+		reject_item(item)
 
 
 func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index: int) -> void:
@@ -167,24 +155,25 @@ func _on_button_clicked(item: TreeItem, column: int, id: int, mouse_button_index
 func _on_item_selected() -> void:
 	var selected := get_selected()
 	var path: String = item_source_paths[selected] if selected and item_source_paths.has(selected) else ""
-	old_preview.value = get_alt_path(path, OLD)
-	new_preview.value = get_alt_path(path, NEW)
-	diff_bitmap.value = get_alt_path(path, DIFF)
+	old_preview.value = get_temp_path(path, OLD)
+	new_preview.value = get_temp_path(path, NEW)
+	diff_bitmap.value = get_temp_path(path, DIFF)
 
 
 func get_files(path: String) -> PackedStringArray:
 	if DirAccess.dir_exists_absolute(path):
-		return get_all_matching_files(path, RegEx.create_from_string(task.filter_include), RegEx.create_from_string(task.filter_exclude))
+		return get_all_matching_files(path, task.itinerary.include_regex, task.itinerary.exclude_regex)
 	elif FileAccess.file_exists(path):
-		if RegEx.create_from_string(task.filter_include).search(path) and FileAccess.file_exists(get_alt_path(path, NEW)):
+		if FileAccess.file_exists(get_temp_path(path, NEW)):
 			return [path]
 	return []
 
 
 func get_all_matching_files(path: String, include: RegEx, exclude: RegEx) -> PackedStringArray:
-	var result: PackedStringArray = []
 	var dir := DirAccess.open(path)
-	if not dir.dir_exists(path): return result
+	if not dir.dir_exists(path): return []
+
+	var result: PackedStringArray = []
 
 	dir.list_dir_begin()
 	var file := dir.get_next()
@@ -193,22 +182,21 @@ func get_all_matching_files(path: String, include: RegEx, exclude: RegEx) -> Pac
 		if dir.current_is_dir():
 			result.append_array(get_all_matching_files(full_path, include, exclude))
 		else:
-			if (include.get_pattern() == "" or include.search(file) != null) and \
-				(exclude.get_pattern() == "" or exclude.search(file) == null) and \
-				FileAccess.file_exists(get_alt_path(full_path, NEW)):
-					result.push_back(full_path)
+			if (
+				(include.get_pattern() == "" or include.search(file.get_basename()) != null)
+				and (exclude.get_pattern() == "" or exclude.search(file.get_basename()) == null)
+				and FileAccess.file_exists(get_temp_path(full_path, NEW))
+			):
+				result.push_back(full_path)
 		file = dir.get_next()
 	dir.list_dir_end()
 	return result
 
 
-func get_alt_path(old: String, type: int = NEW) -> String:
+func get_temp_path(old: String, type: int) -> String:
 	if type == OLD: return old
 
-	var file: String = old.substr(old.rfind("/") + 1)
-	var split := file.rfind(".")
-	var p_name := file.substr(0, split)
-	var ext := file.substr(split)
+	var file: String = old.get_file()
 
 	var p_root := Task.TEMP_DIR_PATH
 	var suffix: String
@@ -216,7 +204,14 @@ func get_alt_path(old: String, type: int = NEW) -> String:
 		NEW: suffix = "__new"
 		DIFF: suffix = "__diff"
 
-	return p_root.path_join(p_name + suffix + ext)
+	var result := p_root
+
+	var subdirpath := old.get_base_dir().right(-task.itinerary.source.length())
+	if subdirpath:
+		result = result.path_join(subdirpath)
+
+	result = result.path_join("%s%s.%s" % [file.get_basename(), suffix, file.get_extension()])
+	return result
 
 
 func select_tree_item_by_index(idx: int) -> void:

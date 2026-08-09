@@ -30,17 +30,6 @@ static func bytes_to_string(bytes: int) -> String:
 		validate_args()
 
 
-var _target_dir: String
-@export_global_dir var target_dir: String:
-	get: return _target_dir
-	set(value):
-		if _target_dir == value: return
-
-		refresh_comment_if_default()
-		_target_dir = value
-		validate_args()
-
-
 var _bytes_reduced: int
 var bytes_reduced: int:
 	get: return _bytes_reduced
@@ -55,31 +44,32 @@ func _get_python_script_path() -> String:
 	return "res://addons/sunkist/task_runner/tasks/optipng/optipng.py"
 
 
-func _get_default_comment() -> String:
-	return SunkistUtils.get_project_preferred_path(target_dir)
+# func _get_default_comment() -> String:
+# 	return super._get_default_comment()
 
 
 func _validate_args() -> void:
 	validate_file_path(optipng_path, true, "optipng_path")
-	validate_dir_path(target_dir, true, "target_dir")
+
+	super._validate_args()
 
 
 func _get_python_arguments() -> Array:
 	return [
 		optipng_path,
-		target_dir,
 	]
 
 
 func _save_args(result: Dictionary) -> void:
+	super._save_args(result)
+
 	result.merge({
 		&"optipng_path": optipng_path,
-		&"target_dir": target_dir,
 	})
 
 
-func _load_args(data: Dictionary) -> void:
-	target_dir = data[&"target_dir"]
+# func _load_args(data: Dictionary) -> void:
+# 	super._load_args(data)
 
 
 func _reset() -> void:

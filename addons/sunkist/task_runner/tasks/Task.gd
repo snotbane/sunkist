@@ -1,4 +1,4 @@
-## Thebase class for anytaskthatcanberun and saved in thetaskrunner.
+## The base class for anytaskthatcanberun and saved in thetaskrunner.
 @tool
 class_name Task
 extends Control
@@ -33,7 +33,7 @@ const REMOVE_ICON: Texture2D = preload("res://addons/sunkist/ui/icons/Remove.svg
 
 
 static var TEMP_DIR_PATH: String:
-	get: return ProjectSettings.globalize_path("user://tmp/")
+	get: return ProjectSettings.globalize_path("user://temp")
 
 
 static func get_source_target_diff_path(source: String, target: String) -> String:
@@ -58,6 +58,8 @@ signal comment_changed
 
 signal status_changed
 
+signal attempts_changed
+
 signal progress_changed
 
 signal started
@@ -72,11 +74,13 @@ signal finished(code: int)
 
 @onready var stopwatch := SunkistStopwatch.new()
 
-@onready var progress_bar: ProgressBar = $v_box_container/results/progress_bar
+@onready var progress_bar: ProgressBar = $v_box_container/results/attempts_bar/progress_bar
 
-@onready var time_elapsed_label: Label = $v_box_container/results/progress_bar/margin_container/time_elapsed
+@onready var attempts_bar: ProgressBar = $v_box_container/results/attempts_bar
 
-@onready var items_completed_label: Label = $v_box_container/results/progress_bar/margin_container/stats/items_completed
+@onready var time_elapsed_label: Label = $v_box_container/results/attempts_bar/margin_container/time_elapsed
+
+@onready var items_completed_label: Label = $v_box_container/results/attempts_bar/margin_container/stats/items_completed
 
 
 var _comment: String = ""
@@ -109,8 +113,13 @@ var status: int = QUEUED:
 		_status = value
 
 		match _status:
-			QUEUED, RUNNING: progress_bar.value = 0.0
-			SUCCEEDED: progress_bar.value = 1.0
+			QUEUED, RUNNING:
+				attempts_bar.value = 0.0
+				progress_bar.value = 0.0
+
+			SUCCEEDED:
+				attempts_bar.value = attempts_bar.max_value
+				progress_bar.value = progress_bar.max_value
 
 		match _status:
 			RUNNING: stopwatch.start()
@@ -140,12 +149,19 @@ var running: bool:
 		else: abort()
 
 
-var progress: float:
+var attempts_percent: float:
+	get: return clampf(inverse_lerp(attempts_bar.min_value, attempts_bar.max_value, attempts_bar.value), 0.0, 1.0)
+
+var progress_percent: float:
 	get: return clampf(inverse_lerp(progress_bar.min_value, progress_bar.max_value, progress_bar.value), 0.0, 1.0)
 
 
 func _ready() -> void:
 	if SunkistUtils.is_node_in_editor(self): return
+
+	var attempts_stylebox: StyleBoxFlat = attempts_bar.get_theme_stylebox(&"fill").duplicate()
+	attempts_stylebox.bg_color = Color.INDIAN_RED
+	attempts_bar.add_theme_stylebox_override(&"fill", attempts_stylebox)
 
 	comment = _get_default_comment()
 
@@ -290,6 +306,9 @@ func _on_comment_editor_text_changed(new_text: String) -> void:
 	_comment = new_text
 	comment_changed.emit()
 
+
+func _on_attempts_bar_value_changed() -> void:
+	attempts_changed.emit()
 
 func _on_progress_bar_value_changed() -> void:
 	progress_changed.emit()

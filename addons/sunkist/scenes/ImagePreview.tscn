@@ -27,6 +27,7 @@ outline_color = Color(0, 0, 0, 1)
 
 [node name="preview" type="PanelContainer" unique_id=29627641]
 visible = false
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2

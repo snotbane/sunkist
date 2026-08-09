@@ -37,10 +37,11 @@ func _validate_args() -> void:
 	validate_file_path(laigter_path, true, "laigter_path")
 	validate_file_path(preset_path, true, "preset_path")
 
+	super._validate_args()
+
 
 func _get_python_arguments() -> Array:
 	return [
-		itinerary.serialize(),
 		laigter_path,
 		preset_path,
 	]
@@ -48,6 +49,7 @@ func _get_python_arguments() -> Array:
 
 func _save_args(result: Dictionary) -> void:
 	super._save_args(result)
+
 	result.merge({
 		&"laigter_path": laigter_path,
 		&"preset_path": preset_path,
@@ -56,6 +58,7 @@ func _save_args(result: Dictionary) -> void:
 
 func _load_args(data: Dictionary) -> void:
 	super._load_args(data)
+
 	preset_path = data[&"preset_path"]
 
 

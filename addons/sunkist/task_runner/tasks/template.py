@@ -8,7 +8,9 @@ import time
 from PIL import Image
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
+attempts: int = 0
 progress: int = 0
+temp_dir: str
 
 
 def str_to_bool(value: str) -> bool:
@@ -118,8 +120,12 @@ class TargetImage:
 
 	def process(self):
 		global progress
+		global attempts
 
 		try:
+			attempts += 1
+			bus_set("output", "attempts", attempts)
+
 			bus_set("output", "source_preview", f"\"{self.source}\"")
 			os.makedirs(os.path.dirname(self.path), exist_ok = True)
 
@@ -129,9 +135,8 @@ class TargetImage:
 			progress += 1
 			bus_set("output", "progress", progress)
 
-
 		except Exception as e:
-			sys.stderr.write(f"Error processing {self.path}: {e}")
+			sys.stderr.write(f"\nError processing {self.path}: {e}")
 			bus_set("output", "target_preview", f"\"\"")
 
 		finally:
@@ -146,32 +151,30 @@ class TargetImage:
 		pass
 
 
-def main():
-	global progress
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument("bus_path", type=str)
+	parser.add_argument("itinerary", type=str_to_itinerary)
 
+	## Specific args here
+
+	args = parser.parse_args()
+
+	bus_path = args.bus_path
+	bus = configparser.ConfigParser()
+	bus.read(bus_path)
+	bus_set("output", "attempts", 0)
 	bus_set("output", "progress", 0)
 
 	targets = args.itinerary.get_targets()
 	bus_set("output", "progress_max", len(targets))
 
 	for target in targets:
+		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
 		target.process()
 
 	if progress < len(targets):
 		sys.stderr.write("Not all images were successfully processed.")
 		sys.exit(39) ## ERR_SCRIPT_FAILED
-
-
-if __name__ == "__main__":
-	parser = argparse.ArgumentParser()
-	parser.add_argument("bus_path", type=str)
-	parser.add_argument("itinerary", type=str_to_itinerary)
-	args = parser.parse_args()
-
-	bus_path = args.bus_path
-	bus = configparser.ConfigParser()
-	bus.read(bus_path)
-
-	main()
 
 	sys.exit(0)

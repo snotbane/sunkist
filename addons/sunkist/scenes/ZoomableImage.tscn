@@ -14,7 +14,8 @@ expand_margin_top = 1.0
 expand_margin_right = 1.0
 expand_margin_bottom = 1.0
 
-[node name="zoomable_image" type="TextureRect"]
+[node name="zoomable_image" type="TextureRect" unique_id=438356327]
+texture_filter = 4
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -28,13 +29,13 @@ stretch_mode = 5
 script = ExtResource("2_plfch")
 expand_speed = 30.0
 
-[node name="zoom_control" type="Control" parent="."]
+[node name="zoom_control" type="Control" parent="." unique_id=411081701]
 layout_mode = 1
 anchors_preset = 0
 mouse_filter = 2
 mouse_behavior_recursive = 1
 
-[node name="clip" type="Control" parent="zoom_control"]
+[node name="clip" type="Control" parent="zoom_control" unique_id=868591279]
 clip_contents = true
 layout_mode = 1
 anchors_preset = 15
@@ -43,7 +44,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="panel" type="Panel" parent="zoom_control/clip"]
+[node name="panel" type="Panel" parent="zoom_control/clip" unique_id=45023319]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,10 +52,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="zoom_image" type="Sprite2D" parent="zoom_control/clip"]
+[node name="zoom_image" type="Sprite2D" parent="zoom_control/clip" unique_id=760971281]
 centered = false
 
-[node name="border" type="Panel" parent="zoom_control"]
+[node name="border" type="Panel" parent="zoom_control" unique_id=217433120]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

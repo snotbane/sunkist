@@ -9,6 +9,7 @@ import time
 from PIL import Image
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
+attempts: int = 0
 progress: int = 0
 
 def str_to_bool(value: str) -> bool:
@@ -131,7 +132,7 @@ class TargetImage:
 
 
 		except Exception as e:
-			sys.stderr.write(f"Error processing {self.path}: {e}")
+			sys.stderr.write(f"\nError processing {self.path}: {e}")
 			bus_set("output", "target_preview", f"\"\"")
 
 		finally:

@@ -16,7 +16,7 @@
 [ext_resource type="Script" uid="uid://cl81t2vbdaklc" path="res://addons/sunkist/task_runner/tasks/TaskTemplate.gd" id="14_ufycr"]
 [ext_resource type="Resource" uid="uid://dfcdu1wmnihl2" path="res://addons/sunkist/task_runner/tasks/spruce/spruce.tres" id="15_a4t1i"]
 [ext_resource type="Resource" uid="uid://b8o7rpmif1hy8" path="res://addons/sunkist/task_runner/tasks/laigter/laigter.tres" id="16_qv03b"]
-[ext_resource type="Resource" uid="uid://f2w8bttuc4oc" path="res://addons/sunkist/task_runner/tasks/sunkist/sunkist_assembly_task.tres" id="17_qjehu"]
+[ext_resource type="Resource" uid="uid://f2w8bttuc4oc" path="res://addons/sunkist/task_runner/tasks/texpack/texpack.tres" id="17_qjehu"]
 [ext_resource type="Resource" uid="uid://bdrvf6blp42h2" path="res://addons/sunkist/task_runner/tasks/optipng/optipng.tres" id="18_m20k4"]
 [ext_resource type="Resource" uid="uid://3fhy7na0ubj1" path="res://addons/sunkist/task_runner/tasks/remapper/remapper.tres" id="19_dda8a"]
 [ext_resource type="Script" uid="uid://6eldrawh61aa" path="res://addons/sunkist/task_runner/TaskContainer.gd" id="19_g0as0"]

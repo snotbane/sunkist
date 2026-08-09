@@ -45,6 +45,8 @@ func _on_task_status_changed() -> void:
 			tooltip_text = \"Reset the task to be run again.\"
 "
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_igc1g"]
+
 [node name="task" type="Control" unique_id=181984087]
 layout_mode = 3
 anchors_preset = 15
@@ -79,13 +81,24 @@ flat = true
 script = SubResource("GDScript_vaehq")
 task = NodePath("../../..")
 
-[node name="progress_bar" type="ProgressBar" parent="v_box_container/results" unique_id=1816965090]
+[node name="attempts_bar" type="ProgressBar" parent="v_box_container/results" unique_id=1816965090]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 1
 max_value = 1.0
 step = 0.0
+show_percentage = false
 
-[node name="margin_container" type="MarginContainer" parent="v_box_container/results/progress_bar" unique_id=383752516]
+[node name="progress_bar" type="ProgressBar" parent="v_box_container/results/attempts_bar" unique_id=272758117]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/background = SubResource("StyleBoxEmpty_igc1g")
+
+[node name="margin_container" type="MarginContainer" parent="v_box_container/results/attempts_bar" unique_id=383752516]
 custom_minimum_size = Vector2(0, 27)
 layout_mode = 1
 anchors_preset = 15
@@ -97,19 +110,19 @@ mouse_filter = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_right = 8
 
-[node name="time_elapsed" type="Label" parent="v_box_container/results/progress_bar/margin_container" unique_id=1627825704]
+[node name="time_elapsed" type="Label" parent="v_box_container/results/attempts_bar/margin_container" unique_id=1627825704]
 layout_mode = 2
 size_flags_horizontal = 2
 tooltip_text = "Elapsed time since this task started."
 mouse_filter = 1
 text = "00:00"
 
-[node name="stats" type="HBoxContainer" parent="v_box_container/results/progress_bar/margin_container" unique_id=642357511]
+[node name="stats" type="HBoxContainer" parent="v_box_container/results/attempts_bar/margin_container" unique_id=642357511]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 2
 
-[node name="items_completed" type="Label" parent="v_box_container/results/progress_bar/margin_container/stats" unique_id=1256294260]
+[node name="items_completed" type="Label" parent="v_box_container/results/attempts_bar/margin_container/stats" unique_id=1256294260]
 layout_mode = 2
 size_flags_horizontal = 10
 tooltip_text = "Number of items completed in this task."

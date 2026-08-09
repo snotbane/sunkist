@@ -22,6 +22,9 @@ static func validate_regex_string(rx: String) -> bool:
 		target = value
 		emit_changed()
 
+var target_safe: String:
+	get: return target if target else source
+
 
 ## Include regex filter. Filters to include only files whose names (not including directory or extension) match.
 @export var include: String = r"":
@@ -29,7 +32,11 @@ static func validate_regex_string(rx: String) -> bool:
 		if include == value: return
 
 		include = value
+		include_regex.compile(include)
+
 		emit_changed()
+
+var include_regex := RegEx.new()
 
 
 ## Exclude regex filter. Filters to exclude any files whose names (not including directory or extension) match.
@@ -38,8 +45,11 @@ static func validate_regex_string(rx: String) -> bool:
 		if exclude == value: return
 
 		exclude = value
+		exclude_regex.compile(exclude)
+
 		emit_changed()
 
+var exclude_regex := RegEx.new()
 
 ## Pattern which will be removed in the target file name.
 @export var rename_filter: String = r"":
@@ -47,7 +57,11 @@ static func validate_regex_string(rx: String) -> bool:
 		if rename_filter == value: return
 
 		rename_filter = value
+		rename_regex.compile(rename_filter)
+
 		emit_changed()
+
+var rename_regex := RegEx.new()
 
 
 ## Text to replace [member rename_filter] with in the target file name. If [member rename_filter] is not specified, this string will be appended to the end.
@@ -105,7 +119,7 @@ func validate() -> PackedStringArray:
 func get_as_args() -> Array:
 	return [
 		source,
-		target if target else source,
+		target_safe,
 		include,
 		exclude,
 		rename_filter,
@@ -116,9 +130,11 @@ func get_as_args() -> Array:
 
 func serialize() -> String:
 	var result := ""
+
 	for arg: String in get_as_args():
 		result += "%s\t" % arg
-	return result.left(-1)
+
+	return PythonTask.value_as_python_argument(result.left(-1))
 
 
 func deserialize(s: String) -> void:

@@ -174,11 +174,11 @@ func add_task(task: Task) -> TreeItem:
 	# task.tree_exited.connect(task_items.erase.bind(task))
 	task.comment_changed.connect(refresh_task_comment.bind(task))
 	task.status_changed.connect(refresh_task_status.bind(task))
-	task.progress_changed.connect(refresh_task_progress.bind(task))
+	task.attempts_changed.connect(refresh_task_progress.bind(task))
 	var result := add_task_item(task)
 
 	if task.visible:
-		set_selected(result, 0)
+		set_selected.call_deferred(result, 0)
 
 	return result
 
@@ -342,7 +342,7 @@ func refresh_task_status(task: Task) -> void:
 func refresh_task_progress(task: Task) -> void:
 	if task.status != Task.RUNNING: return
 	var item: TreeItem = task_items[task]
-	var progress := floori(task.progress * 100.0)
+	var progress := floori(task.attempts_percent * 100.0)
 	item.set_text(STATUS, "%s%%" % progress)
 
 

@@ -35,7 +35,7 @@ func _ready() -> void:
 
 
 func _process_running(delta: float) -> void:
-	progress_bar.value = 1.0 - ($timer.time_left / $timer.wait_time)
+	attempts_bar.value = 1.0 - ($timer.time_left / $timer.wait_time)
 	progress_changed.emit()
 
 

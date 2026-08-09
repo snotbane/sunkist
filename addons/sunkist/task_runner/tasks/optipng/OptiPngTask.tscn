@@ -18,10 +18,10 @@ tooltip_text = "Can't run this task due to errors:
 Directory 'target_dir' cannot be blank."
 disabled = true
 
-[node name="stats" parent="v_box_container/results/progress_bar/margin_container" parent_id_path=PackedInt32Array(383752516) index="1" unique_id=642357511]
+[node name="stats" parent="v_box_container/results/attempts_bar/margin_container" parent_id_path=PackedInt32Array(383752516) index="1" unique_id=642357511]
 visible = true
 
-[node name="bytes_reduced_label" type="Label" parent="v_box_container/results/progress_bar/margin_container/stats" index="1" unique_id=1296748345]
+[node name="bytes_reduced_label" type="Label" parent="v_box_container/results/attempts_bar/margin_container/stats" index="1" unique_id=1296748345]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4

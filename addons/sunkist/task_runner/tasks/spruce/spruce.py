@@ -4,21 +4,25 @@ import os
 import re
 import sys
 import time
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageDraw
+
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
-progress = 0
+attempts: int = 0
+progress: int = 0
+temp_dir: str
 
-def str2bool(value: str) -> bool:
-	if isinstance(value, bool):
-		return value
-	val = value.lower()
-	if val in ('yes', 'true', 't', '1'):
-		return True
-	elif val in ('no', 'false', 'f', '0'):
-		return False
-	else:
-		raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def str_to_bool(value: str) -> bool:
+    if isinstance(value, bool):
+        return value
+    val = value.lower()
+    if val in ('yes', 'true', 't', '1'):
+        return True
+    elif val in ('no', 'false', 'f', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
 def bus_get(section: str, key: str):
@@ -27,10 +31,9 @@ def bus_get(section: str, key: str):
 
 	result = bus.get(section, key)
 	try:
-		b = str2bool(result)
-		return b
-	except:	pass
-	return result
+		return str_to_bool(result)
+	except:
+		return result
 
 
 def bus_set(section: str, key: str, value):
@@ -40,6 +43,63 @@ def bus_set(section: str, key: str, value):
 	bus.set(section, key, value)
 	with open(bus_path, 'w') as file:
 		bus.write(file, space_around_delimiters=False)
+
+
+class Itinerary:
+	def __init__(self, from_str: str) -> None:
+		splits = from_str.split("\t")
+
+		self.source = splits[0]
+		self.target = splits[1]
+		self.include = re.compile(splits[2]) if splits[2] != "" else None
+		self.exclude = re.compile(splits[3]) if splits[3] != "" else None
+		self.rename_filter = re.compile(splits[4]) if splits[4] != "" else None
+		self.rename_replace = splits[5]
+		self.overwrite = str_to_bool(splits[6])
+
+		if self.target == "":
+			self.target = self.source
+
+
+	def get_targets(self):
+		if os.path.isfile(self.source):
+			return [TargetImage(
+				self.source,
+				self.target,
+				""
+			)]
+
+		elif os.path.isdir(self.source):
+			result = []
+
+			for dirpath, _, files in os.walk(self.source):
+				for file in files:
+					subdirpath = dirpath[(len(self.source) + 1):]
+					name, ext = os.path.splitext(file)
+					if not ext.lower() in SUPPORTED_EXTS: continue
+
+					if self.include != None and re.search(self.include, name) == None: continue
+					if self.exclude != None and re.search(self.exclude, name) != None: continue
+
+					image = TargetImage(
+						os.path.join(dirpath, file),
+						os.path.join(self.target, subdirpath) if subdirpath != "" else self.target,
+						subdirpath
+					)
+					# if not self.overwrite and os.path.exists(image.path): continue
+
+					result.append(image)
+
+			return result
+
+		else:
+			sys.stderr.write("Input path is not a valid file nor directory.")
+			sys.exit(7) ## ERR_FILE_NOT_FOUND
+			return []
+
+
+def str_to_itinerary(value: str) -> Itinerary:
+	return Itinerary(value)
 
 
 class Rect:
@@ -130,183 +190,185 @@ class Rect:
 
 
 class TargetImage:
-	def __init__(self, dir_path_src, file_path_src, dir_path_tgt):
-		self.dir_path_src = dir_path_src
-		self.file_path_src = file_path_src
-		self.full_path_src = os.path.join(dir_path_src, file_path_src)
-		self.name, self.ext = os.path.splitext(file_path_src)
+	def __init__(self, source, target_dir, subdirpath):
+		self.source = source
+		self.source_name, self.ext = os.path.splitext(os.path.basename(self.source))
 
-		self.temp_path_new = os.path.join(args.temp_root, f"{self.name}__new{self.ext}")
-		self.temp_path_diff = os.path.join(args.temp_root, f"{self.name}__diff{self.ext}")
+		self.target_name = (
+			re.sub(args.itinerary.rename_filter, args.itinerary.rename_replace, self.source_name)
+			if args.itinerary.rename_filter != None
+			else (self.source_name + args.itinerary.rename_replace)
+		)
 
-		self.dir_path_tgt = dir_path_tgt
-		self.file_path_tgt = self.file_path_src
-		self.full_path_tgt = os.path.join(dir_path_tgt, self.file_path_tgt)
+		self.path = os.path.join(target_dir, self.target_name + self.ext)
 
-		self.image : Image = Image.open(self.full_path_src).convert("RGBA")
+
+		self.temp_diff = os.path.join(temp_dir, subdirpath, f"{self.source_name}__diff{self.ext}")
+		self.temp_target = os.path.join(temp_dir, subdirpath, f"{self.source_name}__new{self.ext}")
+
+		self.source_image : Image.Image = Image.open(self.source).convert("RGBA")
+		self.target_image : Image.Image
+
+
+	def __str__(self):
+		return self.path
 
 
 	def process(self):
 		global progress
+		global attempts
 
 		try:
-			os.makedirs(args.temp_root, exist_ok=True)
-			os.makedirs(self.dir_path_tgt, exist_ok=True)
-			bus_set("output", "source_preview", f"\"{self.full_path_src}\"")
+			attempts += 1
+			bus_set("output", "attempts", attempts)
 
-			## Initialize bitmap
+			bus_set("output", "source_preview", f"\"{self.source}\"")
+			os.makedirs(os.path.dirname(self.path), exist_ok = True)
+			os.makedirs(os.path.dirname(self.temp_target), exist_ok = True)
 
-			r, g, b, a = self.image.split()
-			a_pixels = a.load()
-			w, h = self.image.size
-			bitmap = Image.new("1", self.image.size)
-			bitmap_pixels = bitmap.load()
+			self._process()
 
-			## Cull pixels below opacity threshold in bitmap
-
-			for x in range(w):
-				for y in range(h):
-					bitmap_pixels[x, y] = 0 if a_pixels[x, y] <= args.island_opacity else 1
-			bitmap_original = bitmap.copy()
-
-			## Cull pixel islands below area threshold in bitmap
-
-			if args.island_size < w * h:
-				pixels_visited = set()
-				island_bitmaps = set()
-
-				def flood_fill(x, y):
-					stack = [(x, y)]
-					island_pixels = []
-
-					while stack:
-						px, py = stack.pop()
-						if (px, py) in pixels_visited or px < 0 or py < 0 or px >= w or py >= h:
-							continue
-						if bitmap_pixels[px, py] == 0:
-							continue
-
-						pixels_visited.add((px, py))
-						island_pixels.append((px, py))
-
-						stack.extend([(px + 1, py), (px - 1, py), (px, py + 1), (px, py - 1)])
-					return island_pixels
-
-				# for x, y in range(w, h):
-				for x in range(w):
-					for y in range(h):
-						if (x, y) in pixels_visited or bitmap_pixels[x, y] == 0: continue
-
-						island_pixels = flood_fill(x, y)
-						if not island_pixels: continue
-
-						min_x = min(p[0] for p in island_pixels)
-						max_x = max(p[0] for p in island_pixels)
-						min_y = min(p[1] for p in island_pixels)
-						max_y = max(p[1] for p in island_pixels)
-						island_rect = Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
-						if island_rect.area < args.island_size: continue
-
-						island_bitmaps = island_bitmaps.union(island_pixels)
-
-				for x in range(w):
-					for y in range(h):
-						bitmap_pixels[x, y] = 1 if (x, y) in island_bitmaps else 0
-
-			## Merge bitmap and original alpha
-
-			mask = bitmap.convert("L")
-			mask_pixels = mask.load()
-			for x in range(w):
-				for y in range(h):
-					a_pixels[x, y] = min(mask_pixels[x, y], a_pixels[x, y])
-			self.image = Image.merge("RGBA", (r, g, b, a))
-			self.image.save(self.temp_path_new)
-
-			## Commit final image
-
-			changes_exist : bool = False
-			if args.review_changes:
-				changes = ImageChops.difference(bitmap, bitmap_original)
-				changes_exist = changes.getbbox()
-				if changes_exist:
-					changes.save(self.temp_path_diff)
-			else:
-				self.image.save(self.full_path_tgt)
-
-			bus_set("output", "target_bitmap", f"\"{self.temp_path_diff}\"")
-			bus_set("output", "target_preview", f"\"{self.temp_path_new}\"")
-
-			if not changes_exist:
-				os.remove(self.temp_path_new)
-				os.remove(self.temp_path_diff)
+			# bus_set("output", "target_preview", f"\"{self.path}\"")
+			progress += 1
+			bus_set("output", "progress", progress)
 
 		except Exception as e:
-			sys.stderr.write(f"Error processing {self.full_path_src}: {e}")
-			progress -= 1
+			sys.stderr.write(f"\nError processing {self.path}: {e}")
+			bus_set("output", "target_preview", f"\"\"")
 
-		progress += 1
-		bus_set("output", "progress", progress)
+		finally:
+			self._cleanup()
+
+	def _process(self):
+		## Initialize bitmap
+
+		r, g, b, a = self.source_image.split()
+		a_pix = a.load()
+		w, h = self.source_image.size
+		bitmap : Image.Image = Image.new("1", self.source_image.size)
+		bitmap_pix = bitmap.load()
+
+		## Cull pixels below opacity threshold in bitmap
+
+		for x in range(w):
+			for y in range(h):
+				bitmap_pix[x, y] = 0 if a_pix[x, y] <= args.island_opacity else 1  # pyright: ignore[reportOptionalSubscript]
+
+		bitmap_original = bitmap.copy()
+
+		## Cull pixel islands below area threshold in bitmap
+
+		if args.island_size < w * h:
+			pixels_visited : set = set()
+			island_bitmaps : set = set()
+
+			def flood_fill(x, y):
+				stack = [(x, y)]
+				island_pixels = []
+
+				while stack:
+					px, py = stack.pop()
+					if (px, py) in pixels_visited or px < 0 or py < 0 or px >= w or py >= h:
+						continue
+					if bitmap_pix[px, py] == 0: # pyright: ignore[reportOptionalSubscript]
+						continue
+
+					pixels_visited.add((px, py))
+					island_pixels.append((px, py))
+
+					stack.extend([(px + 1, py), (px - 1, py), (px, py + 1), (px, py - 1)])
+				return island_pixels
+
+			# for x, y in range(w, h):
+			for x in range(w):
+				for y in range(h):
+					if (x, y) in pixels_visited or bitmap_pix[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+
+					island_pixels = flood_fill(x, y)
+					if not island_pixels: continue
+
+					min_x = min(p[0] for p in island_pixels)
+					max_x = max(p[0] for p in island_pixels)
+					min_y = min(p[1] for p in island_pixels)
+					max_y = max(p[1] for p in island_pixels)
+					island_rect = Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+					if island_rect.area < args.island_size: continue
+
+					island_bitmaps = island_bitmaps.union(island_pixels)
+
+			for x in range(w):
+				for y in range(h):
+					bitmap_pix[x, y] = 1 if (x, y) in island_bitmaps else 0 # pyright: ignore[reportOptionalSubscript]
+
+		## Merge bitmap and original alpha
+
+		mask = bitmap.convert("L")
+		mask_pix = mask.load()
+
+		for x in range(w):
+			for y in range(h):
+				a_pix[x, y] = min(mask_pix[x, y], a_pix[x, y]) # pyright: ignore[reportOptionalSubscript]
+
+		self.target_image = Image.merge("RGBA", (r, g, b, a))
+		self.target_image.save(self.temp_target)
+
+		## Commit final image
+
+		changes_exist : bool = False
+		if not args.itinerary.overwrite:
+			changes = ImageChops.difference(bitmap, bitmap_original)
+			changes_exist = changes.getbbox()
+
+			if changes_exist:
+				changes.save(self.temp_diff)
+
+		if changes_exist:
+			bus_set("output", "target_bitmap", f"\"{self.temp_diff}\"")
+			bus_set("output", "target_preview", f"\"{self.temp_target}\"")
+
+		else:
+			self.target_image.save(self.path)
+
+			bus_set("output", "target_bitmap", f"\"\"")
+			bus_set("output", "target_preview", f"\"\"")
+
+			if os.path.exists(self.temp_target):
+				os.remove(self.temp_target)
+
+			if os.path.exists(self.temp_diff):
+				os.remove(self.temp_diff)
 
 
-def assign_image_targets():
-	result = []
-	include_any = args.filter_include != ""
-	exclude_any = args.filter_exclude != ""
-	include = re.compile(args.filter_include)
-	exclude = re.compile(args.filter_exclude)
-
-	for sub_dir, _, files in os.walk(args.source):
-		for file in files:
-			name, ext = os.path.splitext(file)
-			if not ext.lower() in SUPPORTED_EXTS: continue
-
-			if include_any and re.search(include, name) == None: continue
-			if exclude_any and re.search(exclude, name) != None: continue
-
-			target = TargetImage(os.path.join(args.source, sub_dir), file, os.path.join(args.target, sub_dir))
-			result.append(target)
-
-	return result
-
-
-def main():
-	bus_set("output", "progress", 0)
-	if os.path.isdir(args.source):
-		targets = assign_image_targets()
-		bus_set("output", "progress_max", len(targets))
-		for target in targets:
-			if bus_get("input", "stop"): sys.exit(1)
-			target.process()
-	elif os.path.isfile(args.source):
-		target = TargetImage(os.path.dirname(args.source), os.path.basename(args.source), os.path.dirname(args.target))
-		bus_set("output", "progress_max", 1)
-		target.process()
-	else:
-		sys.stderr.write("Input path is not a valid file nor directory.")
-		sys.exit(1)
+	def _cleanup(self):
+		pass
 
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
-	parser.add_argument("temp_root", type=str)
-	parser.add_argument("source", type=str)
-	parser.add_argument("target", type=str)
-	parser.add_argument("review_changes", type=str2bool)
-	parser.add_argument("filter_include", type=str)
-	parser.add_argument("filter_exclude", type=str)
+	parser.add_argument("itinerary", type=str_to_itinerary)
+
 	parser.add_argument("island_opacity", type=int)
 	parser.add_argument("island_size", type=int)
-	args = parser.parse_args()
 
-	args.filter_include = args.filter_include[1:-1]
-	args.filter_exclude = args.filter_exclude[1:-1]
+	args = parser.parse_args()
 
 	bus_path = args.bus_path
 	bus = configparser.ConfigParser()
 	bus.read(bus_path)
+	temp_dir = os.path.dirname(bus_path)
 
-	main()
+	bus_set("output", "progress", 0)
+
+	targets = args.itinerary.get_targets()
+	bus_set("output", "progress_max", len(targets))
+
+	for target in targets:
+		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
+		target.process()
+
+	if progress < len(targets):
+		sys.stderr.write("Not all images were successfully processed.")
+		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)
