@@ -46,7 +46,7 @@ var _filter_separate: String = r"^"
 
 
 ## Assigns composition data based on the internal groups of the regex. FOR NOW this only works with this specific pattern, so don't change this.
-@export_storage var filter_composite: String = r"((.+?)(?:\-(\d+))?)\-([lr])\-(.)":
+@export var filter_composite: String = r"((.+?)(?:\-(\d+))?)\-([lr])\-(.)":
 	set(value):
 		if filter_composite == value: return
 
@@ -77,7 +77,7 @@ var _filter_separate: String = r"^"
 
 
 func _get_python_script_path() -> String:
-	return "res://addons/sunkist/task_runner/tasks/sunkist/sunkist_assembly.py"
+	return "res://addons/sunkist/task_runner/tasks/texpack/texpack.py"
 
 
 func _get_default_comment() -> String:
@@ -101,8 +101,8 @@ func _get_python_arguments() -> Array:
 		project_name,
 		target_size_limit,
 		"RGBA",
-		filter_separate,
-		filter_composite,
+		restr(filter_separate),
+		restr(filter_composite),
 		island_crop,
 		island_margin,
 	]

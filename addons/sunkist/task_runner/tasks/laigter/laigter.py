@@ -118,11 +118,15 @@ class TargetImage:
 
 
 	def process(self):
+		global attempts
 		global progress
 
 		try:
+			attempts += 1
+			bus_set("output", "attempts", attempts)
 			bus_set("output", "source_preview", f"\"{self.source}\"")
 			os.makedirs(os.path.dirname(self.path), exist_ok = True)
+			os.makedirs(os.path.dirname(self.temp_source), exist_ok = True)
 
 			self._process()
 
@@ -147,13 +151,13 @@ class TargetImage:
 		while process.poll() is None:
 			if bus_get("input", "stop"):
 				process.kill()
-				sys.exit(2)
+				sys.exit(45) ## ERR_SKIP
 			time.sleep(0.25)
 
 		if not os.path.exists(self.temp_normal): raise Exception(f"Normal file '{self.temp_normal}' does not exist and/or was not created.")
 		image = Image.open(self.temp_normal)
 
-		source : Image = Image.open(self.source).convert("RGBA")
+		source : Image.Image = Image.open(self.source).convert("RGBA")
 		image.putalpha(source.getchannel("A"))
 		image.save(self.path)
 
@@ -173,23 +177,6 @@ def str_to_itinerary(value: str) -> Itinerary:
 	return Itinerary(value)
 
 
-
-def main():
-	global progress
-
-	bus_set("output", "progress", 0)
-
-	targets = args.itinerary.get_targets()
-	bus_set("output", "progress_max", len(targets))
-
-	for target in targets:
-		target.process()
-
-	if progress < len(targets):
-		sys.stderr.write("Not all images were successfully processed.")
-		sys.exit(39) ## ERR_SCRIPT_FAILED
-
-
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
@@ -202,6 +189,18 @@ if __name__ == "__main__":
 	bus = configparser.ConfigParser()
 	bus.read(bus_path)
 
-	main()
+
+	bus_set("output", "attempts", 0)
+	bus_set("output", "progress", 0)
+
+	targets = args.itinerary.get_targets()
+	bus_set("output", "progress_max", len(targets))
+
+	for target in targets:
+		target.process()
+
+	if progress < len(targets):
+		sys.stderr.write("\nNot all images were successfully processed.")
+		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)

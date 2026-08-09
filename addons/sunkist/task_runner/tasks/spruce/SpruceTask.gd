@@ -21,11 +21,6 @@ extends PythonTask
 		validate_args()
 
 
-func _init() -> void:
-	super._init()
-	itinerary.overwrite = false
-
-
 func _get_python_script_path() -> String:
 	return "res://addons/sunkist/task_runner/tasks/spruce/spruce.py"
 

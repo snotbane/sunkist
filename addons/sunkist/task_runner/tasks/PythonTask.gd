@@ -6,6 +6,10 @@ extends Task
 const ABORT_KEY := "stop"
 
 
+static func restr(str: String) -> String:
+	return "/%s/" % str
+
+
 static func localize_script_path(path: String) -> String:
 	if OS.has_feature("editor"):
 		return ProjectSettings.globalize_path(path)
@@ -103,12 +107,6 @@ func get_python_arguments() -> PackedStringArray:
 	return result
 
 
-func _init() -> void:
-	itinerary = TaskItinerary.new()
-	if not itinerary.changed.is_connected(validate_args):
-		itinerary.changed.connect(validate_args)
-
-
 func _ready() -> void:
 	super._ready()
 
@@ -169,6 +167,7 @@ func _abort() -> bool:
 func execute(cmd: String, args: PackedStringArray) -> int:
 	return execute_static(cmd, args)
 static func execute_static(cmd: String, args: PackedStringArray, print_output: bool = true) -> int:
+	# print("args : %s" % [args])
 	var output: Array
 	var result: int = OS.execute(cmd, args, output, print_output)
 	if print_output:

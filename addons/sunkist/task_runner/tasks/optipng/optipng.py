@@ -119,14 +119,19 @@ class TargetImage:
 
 	def process(self):
 		global progress
+		global attempts
 
 		try:
+			attempts += 1
+			bus_set("output", "attempts", attempts)
 			bus_set("output", "source_preview", f"\"{self.source}\"")
 			os.makedirs(os.path.dirname(self.path), exist_ok = True)
 
 			self._process()
 
 			# bus_set("output", "target_preview", f"\"{self.path}\"")
+			progress += 1
+			bus_set("output", "progress", progress)
 
 
 		except Exception as e:
@@ -134,8 +139,6 @@ class TargetImage:
 			# bus_set("output", "target_preview", f"\"\"")
 
 		finally:
-			progress += 1
-			bus_set("output", "progress", progress)
 
 			self._cleanup()
 
@@ -144,9 +147,9 @@ class TargetImage:
 	def _process(self):
 		global bytes_reduced
 
-		file_size_prior = os.path.getsize(self.path)
+		file_size_prior = os.path.getsize(self.source)
 
-		process = subprocess.Popen([args.optipng_path, "-o7", "-out", self.path, self.path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+		process = subprocess.Popen([args.optipng_path, "-o7", "-out", self.source, self.source], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
 		while process.poll() is None:
 			if bus_get("input", "stop"):
@@ -186,7 +189,7 @@ if __name__ == "__main__":
 		target.process()
 
 	if progress < len(targets):
-		sys.stderr.write("Not all images were successfully processed.")
+		sys.stderr.write("\nNot all images were successfully processed.")
 		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)

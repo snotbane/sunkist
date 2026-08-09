@@ -182,7 +182,7 @@ if __name__ == "__main__":
 		target.process()
 
 	if progress < len(targets):
-		sys.stderr.write("Not all images were successfully processed.")
+		sys.stderr.write("\nNot all images were successfully processed.")
 		sys.exit(39) ## ERR_SCRIPT_FAILED
 
 	sys.exit(0)

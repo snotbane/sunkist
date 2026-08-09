@@ -1,3 +1,4 @@
+## Runs OptiPNG on images. This automatically uses the best (slowest) setting. [url=https://optipng.sourceforge.net/optipng-7.9.1.man1.html]OptiPNG Documentation[/url]
 @tool
 extends PythonTask
 
@@ -74,11 +75,11 @@ func _save_args(result: Dictionary) -> void:
 
 func _reset() -> void:
 	bytes_reduced = 0
-	%image_preview.clear()
+	%source_preview.clear()
 
 
 func _bus_poll() -> void:
 	super._bus_poll()
 
 	bytes_reduced = bus.get_value("output", "bytes", 0)
-	%image_preview.value = bus.get_value("output", "image_preview", "")
+	%source_preview.value = bus.get_value("output", "source_preview", "")

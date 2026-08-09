@@ -6,10 +6,11 @@
 
 [node name="OptiPngTask" unique_id=1467468519 instance=ExtResource("1_g2ipj")]
 script = ExtResource("2_g1gwt")
-optipng_path = ""
-target_dir = ""
+optipng_path = "/usr/bin/optipng"
+python_venv_path = "res://addons/sunkist/.venv"
+itinerary = null
 
-[node name="image_preview" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=501062242 instance=ExtResource("3_fsoj2")]
+[node name="source_preview" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=501062242 instance=ExtResource("3_fsoj2")]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -18,10 +19,7 @@ tooltip_text = "Can't run this task due to errors:
 Directory 'target_dir' cannot be blank."
 disabled = true
 
-[node name="stats" parent="v_box_container/results/attempts_bar/margin_container" parent_id_path=PackedInt32Array(383752516) index="1" unique_id=642357511]
-visible = true
-
-[node name="bytes_reduced_label" type="Label" parent="v_box_container/results/attempts_bar/margin_container/stats" index="1" unique_id=1296748345]
+[node name="bytes_reduced_label" type="Label" parent="v_box_container/results/attempts_bar/margin_container/stats" parent_id_path=PackedInt32Array(642357511) index="1" unique_id=1296748345]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4

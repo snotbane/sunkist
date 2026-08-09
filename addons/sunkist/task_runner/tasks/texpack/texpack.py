@@ -11,17 +11,21 @@ SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
 attempts: int = 0
 progress: int = 0
 
+def restr(value: str) -> str:
+	return value[1:-1]
 
 def str_to_bool(value: str) -> bool:
-    if isinstance(value, bool):
-        return value
-    val = value.lower()
-    if val in ('yes', 'true', 't', '1'):
-        return True
-    elif val in ('no', 'false', 'f', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+	if isinstance(value, bool):
+		return value
+
+	val = value.lower()
+
+	if val in ('yes', 'true', 't', '1'):
+		return True
+	elif val in ('no', 'false', 'f', '0'):
+		return False
+	else:
+		raise argparse.ArgumentTypeError(f"str_to_bool: Boolean value expected, received '{value}'.")
 
 
 def bus_get(section: str, key: str):
@@ -149,10 +153,10 @@ class PathedImage:
 
 
 class SourceImage(PathedImage):
-	def __init__(self, root: str, file: str, region: Rect = None, bitmap: Image = None):
+	def __init__(self, root: str, file: str, region: Rect, bitmap: Image.Image):
 		super().__init__(root, file)
-		self.image : Image = Image.open(self.full).convert("RGBA")
-		self.bitmap : Image = bitmap
+		self.image : Image.Image = Image.open(self.full).convert("RGBA")
+		self.bitmap : Image.Image = bitmap
 
 		self.source_region = (
 			region
@@ -160,12 +164,12 @@ class SourceImage(PathedImage):
 			else Rect(0, 0, self.image.width, self.image.height)
 		)
 
-		self.target_offset = (0, 0)
+		self.target_offset : tuple[int, int] = (0, 0)
 		self.target_match = None
 		self.target: TargetImage
 
 	@property
-	def image_cropped(self) -> Image:
+	def image_cropped(self) -> Image.Image:
 		return self.image.crop((self.source_region.x, self.source_region.y, self.source_region.r, self.source_region.b))
 
 	@property
@@ -190,25 +194,25 @@ class SourceImage(PathedImage):
 		rx, ry, rw, rh = [-1, -1, -1, -1]
 		for x in range(w):
 			for y in range(h):
-				if a_pixels[x, y] == 0: continue
+				if a_pixels[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
 				rx = x
 				break
 			if rx != -1: break
 		for y in range(h):
 			for x in range(w):
-				if a_pixels[x, y] == 0: continue
+				if a_pixels[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
 				ry = y
 				break
 			if ry != -1: break
 		for x in range(w):
 			for y in range(h):
-				if a_pixels[w-x-1, h-y-1] == 0: continue
+				if a_pixels[w-x-1, h-y-1] == 0: continue # pyright: ignore[reportOptionalSubscript]
 				rw = w - rx - x
 				break
 			if rw != -1: break
 		for y in range(h):
 			for x in range(w):
-				if a_pixels[w-x-1, h-y-1] == 0: continue
+				if a_pixels[w-x-1, h-y-1] == 0: continue # pyright: ignore[reportOptionalSubscript]
 				rh = h - ry - y
 				break
 			if rh != -1: break
@@ -221,10 +225,10 @@ class TargetImage(PathedImage):
 		super().__init__(root, file)
 
 		self.sources = []
-		self.margin = margin
-		self.snaps = [ [ self.margin, self.margin ] ]
+		self.margin : int = margin
+		self.snaps : list = [ [ self.margin, self.margin ] ]
 
-		self.image : Image = Image.new(format, [1, 1])
+		self.image : Image.Image = Image.new(format, [1, 1])
 		self.full_rect : Rect = Rect(0, 0, 1, 1)
 
 
@@ -232,7 +236,7 @@ class TargetImage(PathedImage):
 		new_size = (size[0] + self.margin, size[1] + self.margin)
 		delta = (0, 0, new_size[0] - self.full_rect.w, new_size[1] - self.full_rect.h)
 		self.full_rect.size = new_size
-		self.image = ImageOps.expand(self.image, delta)
+		self.image = ImageOps.expand(self.image, delta) # pyright: ignore[reportArgumentType]
 
 
 	def add(self, source: SourceImage):
@@ -312,7 +316,8 @@ class Itinerary:
 				if self.exclude != None and re.search(self.exclude, name) != None: continue
 
 				try:
-					source = SourceImage(dirpath, file)
+					source = SourceImage(dirpath, file, None, None) # pyright: ignore[reportArgumentType]
+
 				except:
 					continue
 
@@ -402,18 +407,19 @@ def assign_compo_data(atlas: dict) -> dict:
 	return result
 
 if __name__ == "__main__":
+	# print("Hello???")
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
 	parser.add_argument("itinerary", type=str_to_itinerary)
 
 	parser.add_argument("project_name", type=str)
-	parser.add_argument("target_size_limit", type=int) ## TODO: implement
+	parser.add_argument("target_size_limit", type=int)
 	parser.add_argument("target_format", type=str)
-	parser.add_argument("filter_separate", type=str)
-	parser.add_argument("filter_composite", type=str)
+	parser.add_argument("filter_separate", type=restr)
+	parser.add_argument("filter_composite", type=restr)
 	parser.add_argument("island_crop", type=str_to_bool)
 	parser.add_argument("island_margin", type=int)
-
 	args = parser.parse_args()
 
 	bus_path = args.bus_path
@@ -432,7 +438,7 @@ if __name__ == "__main__":
 	bus_set("output", "progress_max", 1)
 
 	sources = args.itinerary.get_sources()
-	sources, targets = args.itinerary.get_targets(sources)
+	sources, targets = args.itinerary.assign_sources_and_targets(sources)
 	bus_set("output", "progress_max", len(sources))
 
 	project_json_path = os.path.join(args.itinerary.target, args.project_name + ".sun")
@@ -440,6 +446,9 @@ if __name__ == "__main__":
 	atlas_data = dict()
 
 	for source in sources:
+		attempts += 1
+		bus_set("output", "attempts", attempts)
+
 		if bus_get("input", "stop"):
 			sys.exit(1)
 
