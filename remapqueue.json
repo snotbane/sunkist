@@ -1,0 +1,18 @@
+{
+	"data": [
+		{
+			"itinerary": {
+				"exclude": "",
+				"include": "-a$",
+				"overwrite": true,
+				"rename_filter": "-a$",
+				"rename_replace": "-m",
+				"source": "/home/snotbane/Documents/Sunkist/charybdis/characters/esther",
+				"target": "/home/snotbane/Downloads/esther"
+			},
+			"remap": "000000ffffff00ff",
+			"template_uid": "uid://3fhy7na0ubj1"
+		}
+	],
+	"type": "Sunkist"
+}

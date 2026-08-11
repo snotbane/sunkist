@@ -6,8 +6,9 @@
 
 [node name="task" unique_id=181984087 instance=ExtResource("1_yihp1")]
 script = ExtResource("2_60ule")
-itinerary = null
+remap = null
 python_venv_path = "res://addons/sunkist/.venv"
+itinerary = null
 comment = "Python task: "
 
 [node name="split" type="HSplitContainer" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=245009262]

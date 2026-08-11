@@ -57,20 +57,25 @@ func serialize() -> String:
 
 	var result := ""
 	for i in source.colors.size():
-		result += "#" + source.colors[i].to_html()
-		result += "#" + target.colors[i].to_html()
+		result += source.colors[i].to_html()
+		result += target.colors[i].to_html()
 
 	return result
 
 
 func deserialize(data: String) -> void:
+	var source_colors := PackedColorArray()
+	source_colors.resize(data.length() / 16)
+
+	var target_colors := PackedColorArray()
+	target_colors.resize(source_colors.size())
+
+	for i in source_colors.size():
+		source_colors[i] = Color.html(data.substr(i * 16, 8))
+		target_colors[i] = Color.html(data.substr(i * 16 + 8, 8))
+
 	source = ColorPalette.new()
+	source.colors = source_colors
+
 	target = ColorPalette.new()
-
-	var splits: PackedStringArray = data.right(-1).split("#")
-	source.colors.resize(splits.size() / 2)
-	target.colors.resize(source.colors.size())
-
-	for i in source.colors.size():
-		source.colors[i] = Color.html(splits[i * 2])
-		target.colors[i] = Color.html(splits[i * 2 + 1])
+	target.colors = target_colors

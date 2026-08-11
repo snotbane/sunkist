@@ -4,7 +4,7 @@ import os
 import re
 import sys
 import time
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops
 
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]

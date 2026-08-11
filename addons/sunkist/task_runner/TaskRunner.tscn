@@ -154,6 +154,8 @@ mouse_filter = 0
 mouse_default_cursor_shape = 2
 horizontal_alignment = 1
 text_overrun_behavior = 1
+text_direction = 2
+structured_text_bidi_override = 2
 script = ExtResource("1_j465y")
 
 [node name="manager_buttons" type="GridContainer" parent="tab_container/main_split/task_manager/vbox" unique_id=273076860 node_paths=PackedStringArray("buttons_disabled_while_running")]
