@@ -11,14 +11,19 @@
 
 [node name="SpruceTask" unique_id=1404109605 instance=ExtResource("1_2jeqr")]
 script = ExtResource("2_1tbij")
-review_changes = true
-source_dir = ""
-target_dir = ""
-filter_include = ""
-filter_exclude = ""
-island_opacity = 0
-island_size = 256
+spot_enabled = true
+spot_opacity = 0
+spot_size = 256
+spot_hint = Color(1, 0, 0, 1)
+hole_enabled = true
+hole_opacity = 255
+hole_size = 256
+hole_hint = Color(0, 1, 0, 1)
+feather_enabled = true
+feather_palette = null
+feather_hint = Color(0, 0, 1, 1)
 python_venv_path = "res://addons/sunkist/.venv"
+itinerary = null
 
 [node name="split" type="HSplitContainer" parent="v_box_container/content" parent_id_path=PackedInt32Array(1147619570) index="0" unique_id=102537551]
 layout_mode = 2
@@ -46,7 +51,8 @@ label = "Original"
 
 [node name="source_label" type="Label" parent="v_box_container/content/split/images/source/v_box_container" index="1" unique_id=472566983]
 layout_mode = 2
-size_flags_horizontal = 4
+tooltip_text = "The original, unmodified image."
+mouse_filter = 0
 text = "Original"
 horizontal_alignment = 1
 
@@ -67,7 +73,8 @@ label = "Modified"
 
 [node name="target_label" type="Label" parent="v_box_container/content/split/images/target/v_box_container" index="1" unique_id=1257424743]
 layout_mode = 2
-size_flags_horizontal = 4
+tooltip_text = "The result image. Click Accept to save this file in its target location."
+mouse_filter = 0
 text = "Modified"
 horizontal_alignment = 1
 
@@ -93,6 +100,8 @@ label = "Diff Bitmap"
 
 [node name="diff_label" type="Label" parent="v_box_container/content/split/review/diff/v_box_container" index="1" unique_id=1811444890]
 layout_mode = 2
+tooltip_text = "Temporary helper image that clearly displays areas where the Modified image was modified."
+mouse_filter = 0
 text = "Diffmap"
 horizontal_alignment = 1
 
@@ -146,6 +155,8 @@ link = NodePath("../../../../diff")
 
 [node name="controls_label" type="Label" parent="v_box_container/content/split/review/changes/v_box_container" index="2" unique_id=1643102572]
 layout_mode = 2
+tooltip_text = "A list of files which need to be reviewed."
+mouse_filter = 0
 text = "Changes"
 horizontal_alignment = 1
 

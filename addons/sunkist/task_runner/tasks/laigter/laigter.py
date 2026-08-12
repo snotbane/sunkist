@@ -1,3 +1,4 @@
+# pyright: reportOptionalSubscript=false
 import argparse
 import configparser
 import os

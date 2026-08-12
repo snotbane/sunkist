@@ -125,4 +125,4 @@ func _on_path_label_gui_input(event: InputEvent) -> void:
 				EditorInterface.get_file_system_dock().navigate_to_path(value)
 
 			elif FileAccess.file_exists(value):
-				OS.shell_show_in_file_manager(value)
+				OS.shell_open(value)

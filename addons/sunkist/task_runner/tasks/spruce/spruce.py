@@ -1,16 +1,50 @@
+# pyright: reportOptionalSubscript=false
 import argparse
 import configparser
 import os
 import re
 import sys
 import time
-from PIL import Image, ImageChops
+from PIL import Image
 
 
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
 attempts: int = 0
 progress: int = 0
 temp_dir: str
+
+Color3 = tuple[int, int, int]
+
+def str_to_color3(s: str) -> Color3:
+	return (
+		int(s[0 : 2], 16),
+		int(s[2 : 4], 16),
+		int(s[4 : 6], 16),
+		# int(s[6 : 8], 16),
+	)
+
+Color3Palette = set[Color3]
+
+def str_to_color3_palette(s: str) -> Color3Palette:
+	result: Color3Palette = set()
+
+	for i in range(len(s) // 8):
+		ib = i * 8
+		result.add(str_to_color3(s[ib : ib + 8]))
+
+	return result
+
+
+Color4 = tuple[int, int, int, int]
+
+def str_to_color4(s: str) -> Color4:
+	return (
+		int(s[0 : 2], 16),
+		int(s[2 : 4], 16),
+		int(s[4 : 6], 16),
+		int(s[6 : 8], 16),
+	)
+
 
 
 def str_to_bool(value: str) -> bool:
@@ -102,93 +136,6 @@ def str_to_itinerary(value: str) -> Itinerary:
 	return Itinerary(value)
 
 
-class Rect:
-	def __init__(self, *args):
-		if len(args) == 4 and all(isinstance(arg, int) for arg in args):
-			self.x, self.y, self.w, self.h = args
-		elif len(args) == 2 and all(isinstance(arg, tuple) and len(arg) == 2 for arg in args):
-			(self.x, self.y), (self.w, self.h) = args
-		else:
-			raise TypeError("Expected 4 integers or 2 (x, y) tuples")
-
-
-	def __repr__(self):
-		return f"Rect({self.x}, {self.y} ... {self.w}, {self.h})"
-
-
-	@property
-	def xy(self) -> tuple[int, int]:
-		return (self.x, self.y)
-	@xy.setter
-	def xy(self, value: tuple[int, int]):
-		self.x = value[0]
-		self.y = value[1]
-
-
-	@property
-	def size(self) -> tuple[int, int]:
-		return (self.w, self.h)
-	@size.setter
-	def size(self, value: tuple[int, int]):
-		self.w = value[0]
-		self.h = value[1]
-
-
-	@property
-	def r(self) -> int:
-		return self.x + self.w
-	@r.setter
-	def r(self, value):
-		self.w = value - self.x
-
-
-	@property
-	def b(self) -> int:
-		return self.y + self.h
-	@b.setter
-	def b(self, value):
-		self.h = value - self.y
-
-
-	@property
-	def rb(self) -> tuple[int, int]:
-		return (self.r, self.b)
-	@rb.setter
-	def rb(self, value: tuple[int, int]):
-		self.r = value[0]
-		self.b = value[1]
-
-
-	@property
-	def area(self) -> int:
-		return self.w * self.h
-
-
-	## Returns true if the other Rect is completely inside self
-	def contains(self, other) -> bool:
-		if not isinstance(other, Rect):
-			raise TypeError("Expected a Rect instance")
-		return (
-			self.x <= other.x and self.y <= other.y and
-			self.r >= other.r and self.b >= other.b
-		)
-
-	## Returns true if the Rects touch at all
-	def overlaps(self, other) -> bool:
-		if not isinstance(other, Rect):
-			raise TypeError("Expected a Rect instance")
-		return not (
-			self.r <= other.x or self.x >= other.r or
-			self.b <= other.y or self.y >= other.b
-		)
-
-	def union(self, other):
-		result = Rect(min(self.x, other.x), min(self.y, other.y), max(self.r, other.r), max(self.b, other.b))
-		result.r = result.w
-		result.b = result.h
-		return result
-
-
 class TargetImage:
 	def __init__(self, source, target_dir, subdirpath):
 		self.source = source
@@ -240,103 +187,224 @@ class TargetImage:
 			self._cleanup()
 
 	def _process(self):
-		## Initialize bitmap
-
-		r, g, b, a = self.source_image.split()
-		a_pix = a.load()
+		ri, gi, bi, ai = self.source_image.split()
+		r = ri.load()
+		g = gi.load()
+		b = bi.load()
+		a = ai.load()
 		w, h = self.source_image.size
-		bitmap : Image.Image = Image.new("1", self.source_image.size)
-		bitmap_pix = bitmap.load()
 
-		## Cull pixels below opacity threshold in bitmap
+		diffmap : Image.Image = Image.new("RGBA", self.source_image.size)
+		diffmap_p = diffmap.load()
 
-		for x in range(w):
-			for y in range(h):
-				bitmap_pix[x, y] = 0 if a_pix[x, y] <= args.island_opacity else 1  # pyright: ignore[reportOptionalSubscript]
-
-		bitmap_original = bitmap.copy()
-
-		## Cull pixel islands below area threshold in bitmap
-
-		if args.island_size < w * h:
-			pixels_visited : set = set()
-			island_bitmaps : set = set()
-
-			def flood_fill(x, y):
-				stack = [(x, y)]
-				island_pixels = []
-
-				while stack:
-					px, py = stack.pop()
-					if (px, py) in pixels_visited or px < 0 or py < 0 or px >= w or py >= h:
-						continue
-					if bitmap_pix[px, py] == 0: # pyright: ignore[reportOptionalSubscript]
-						continue
-
-					pixels_visited.add((px, py))
-					island_pixels.append((px, py))
-
-					stack.extend([(px + 1, py), (px - 1, py), (px, py + 1), (px, py - 1)])
-				return island_pixels
-
-			# for x, y in range(w, h):
+		def add_to_diff(diff, hint: Color4):
 			for x in range(w):
 				for y in range(h):
-					if (x, y) in pixels_visited or bitmap_pix[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+					diffmap_p[x, y] = (
+						diffmap_p[x, y][0] + hint[0] * diff[x, y],
+						diffmap_p[x, y][1] + hint[1] * diff[x, y],
+						diffmap_p[x, y][2] + hint[2] * diff[x, y],
+						diffmap_p[x, y][3] + hint[3] * diff[x, y],
+					)
 
-					island_pixels = flood_fill(x, y)
-					if not island_pixels: continue
 
-					min_x = min(p[0] for p in island_pixels)
-					max_x = max(p[0] for p in island_pixels)
-					min_y = min(p[1] for p in island_pixels)
-					max_y = max(p[1] for p in island_pixels)
-					island_rect = Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
-					if island_rect.area < args.island_size: continue
+		def flood(candidate, visited, x, y, area_max):
+			stack = [(x, y)]
+			area = 0
 
-					island_bitmaps = island_bitmaps.union(island_pixels)
+			while stack:
+				px, py = stack.pop()
+				if px < 0 or py < 0 or px >= w or py >= h: continue
+				if visited[px, py] or not candidate[px, py]: continue
+
+				visited[px, py] = 1
+				area += 1
+
+				stack.extend([(px + 1, py), (px - 1, py), (px, py + 1), (px, py - 1)])
+
+			if area > area_max:
+				for x in range(w):
+					for y in range(h):
+						if not visited[x, y]: continue
+						candidate[x, y] = 0
+
+
+		def _process_spot():
+			if args.spot_size >= w * h: return
+
+			candidate_image = Image.new("1", self.source_image.size)
+			candidate = candidate_image.load()
+			visited_image = Image.new("1", self.source_image.size)
+			visited = visited_image.load()
 
 			for x in range(w):
 				for y in range(h):
-					bitmap_pix[x, y] = 1 if (x, y) in island_bitmaps else 0 # pyright: ignore[reportOptionalSubscript]
+					candidate[x, y] = int(a[x, y] > args.spot_opacity)
+					visited[x, y] = 1 - candidate[x, y]
 
-		## Merge bitmap and original alpha
+			for x in range(w):
+				for y in range(h):
+					if visited[x, y]: continue
 
-		mask = bitmap.convert("L")
-		mask_pix = mask.load()
+					flood(candidate, visited, x, y, args.spot_size)
 
-		for x in range(w):
-			for y in range(h):
-				a_pix[x, y] = min(mask_pix[x, y], a_pix[x, y]) # pyright: ignore[reportOptionalSubscript]
+			add_to_diff(candidate, args.spot_hint)
 
-		self.target_image = Image.merge("RGBA", (r, g, b, a))
-		self.target_image.save(self.temp_target)
+			for x in range(w):
+				for y in range(h):
+					if not candidate[x, y]: continue
 
-		## Commit final image
+					a[x, y] = 0
 
-		changes_exist : bool = False
-		if not args.itinerary.overwrite:
-			changes = ImageChops.difference(bitmap, bitmap_original)
-			changes_exist = changes.getbbox()
 
-			if changes_exist:
-				changes.save(self.temp_diff)
+		def _process_hole():
+			if args.hole_size >= w * h: return
 
-		if changes_exist:
+			candidate_image = Image.new("1", self.source_image.size)
+			candidate = candidate_image.load()
+			visited_image = Image.new("1", self.source_image.size)
+			visited = visited_image.load()
+
+			for x in range(w):
+				for y in range(h):
+					candidate[x, y] = int(a[x, y] < args.hole_opacity)
+					visited[x, y] = 1 - candidate[x, y]
+
+			for x in range(w):
+				for y in range(h):
+					if visited[x, y]: continue
+
+					flood(candidate, visited, x, y, args.hole_size)
+
+			add_to_diff(candidate, args.hole_hint)
+
+			empties = set()
+			for x in range(w):
+				for y in range(h):
+					if not candidate[x, y]: continue
+
+					if a[x, y] == 0:
+						empties.add((x, y))
+
+					a[x, y] = 255
+
+			def get_opaque_neighbors(x: int, y: int) -> list[tuple[int, int]]:
+				result = []
+				for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+					nx, ny = x + dx, y + dy
+					if (nx, ny) in empties: continue
+
+					result.append((nx, ny))
+				return result
+
+			def get_color_from_neighbors(neighbors) -> Color3:
+				samples = []
+
+				for nx, ny in neighbors:
+					samples.append((
+						r[nx, ny],
+						g[nx, ny],
+						b[nx, ny],
+					))
+
+				if not samples:
+					return (0, 0, 0)
+
+				avg_r = round(sum(c[0] for c in samples) / len(samples))
+				avg_g = round(sum(c[1] for c in samples) / len(samples))
+				avg_b = round(sum(c[2] for c in samples) / len(samples))
+
+				return (avg_r, avg_g, avg_b)
+
+			most_neighbors = 4
+			for i in range(most_neighbors):
+				modified = set()
+				for _, (x, y) in enumerate(empties):
+					neighbors = get_opaque_neighbors(x, y)
+					if len(neighbors) < most_neighbors - i: continue
+
+					modified.add((x, y))
+					color = get_color_from_neighbors(neighbors)
+					r[x, y] = color[0]
+					g[x, y] = color[1]
+					b[x, y] = color[2]
+
+				empties.difference_update(modified)
+
+
+		def _process_feather():
+			candidate_image = Image.new("1", self.source_image.size)
+			candidate = candidate_image.load()
+			visited_image = Image.new("1", self.source_image.size)
+			visited = visited_image.load()
+
+			for x in range(w):
+				for y in range(h):
+					c: Color3 = (r[x, y], g[x, y], b[x, y])
+					is_candidate = (
+						a[x, y] < 255
+						and a[x, y] > 0
+						and c not in args.feather_palette
+					)
+
+					candidate[x, y] = int(is_candidate)
+					visited[x, y] = 1 - candidate[x, y]
+
+			add_to_diff(candidate, args.feather_hint)
+
+			palette_color = list(args.feather_palette)[0]
+			for x in range(w):
+				for y in range(h):
+					if not candidate[x, y]: continue
+
+					r[x, y] = palette_color[0]
+					g[x, y] = palette_color[1]
+					b[x, y] = palette_color[2]
+
+
+		if args.spot_enabled:
+			_process_spot()
+
+		if args.hole_enabled:
+			_process_hole()
+
+		if args.feather_enabled:
+			_process_feather()
+
+		def get_needs_review() -> bool:
+			if args.itinerary.overwrite:
+				return False
+
+			for x in range(w):
+				for y in range(h):
+					if diffmap_p[x, y][3] == 0: continue
+
+					return True
+
+			return False
+
+		self.target_image = Image.merge("RGBA", (ri, gi, bi, ai))
+
+		if get_needs_review():
+			diffmap.save(self.temp_diff)
+
+			self.target_image.save(self.temp_target)
+
 			bus_set("output", "target_bitmap", f"\"{self.temp_diff}\"")
 			bus_set("output", "target_preview", f"\"{self.temp_target}\"")
 
 		else:
-			self.target_image.save(self.path)
-
 			bus_set("output", "target_bitmap", f"\"\"")
 			bus_set("output", "target_preview", f"\"\"")
+
+			self.target_image.save(self.path)
 
 			if os.path.exists(self.temp_target):
 				os.remove(self.temp_target)
 
 			if os.path.exists(self.temp_diff):
 				os.remove(self.temp_diff)
+
 
 
 	def _cleanup(self):
@@ -348,10 +416,24 @@ if __name__ == "__main__":
 	parser.add_argument("bus_path", type=str)
 	parser.add_argument("itinerary", type=str_to_itinerary)
 
-	parser.add_argument("island_opacity", type=int)
-	parser.add_argument("island_size", type=int)
+	parser.add_argument("spot_enabled", type=str_to_bool)
+	parser.add_argument("spot_opacity", type=int)
+	parser.add_argument("spot_size", type=int)
+	parser.add_argument("spot_hint", type=str_to_color4)
+
+	parser.add_argument("hole_enabled", type=str_to_bool)
+	parser.add_argument("hole_opacity", type=int)
+	parser.add_argument("hole_size", type=int)
+	parser.add_argument("hole_hint", type=str_to_color4)
+
+	parser.add_argument("feather_enabled", type=str_to_bool)
+	parser.add_argument("feather_palette", type=str_to_color3_palette)
+	parser.add_argument("feather_hint", type=str_to_color4)
 
 	args = parser.parse_args()
+
+	if args.feather_enabled:
+		print("Warning: feather_enabled is true. The feathering feature is currently very sloppy and currently only suitable for images which have a single line art color in feather_palette, and where the lineart completely encapsulates all opaque pixels.")
 
 	bus_path = args.bus_path
 	bus = configparser.ConfigParser()
@@ -366,6 +448,7 @@ if __name__ == "__main__":
 	for target in targets:
 		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
 		target.process()
+		sys.exit(0)
 
 	if progress < len(targets):
 		sys.stderr.write("\nNot all images were successfully processed.")

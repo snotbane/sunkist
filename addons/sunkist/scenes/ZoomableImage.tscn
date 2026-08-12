@@ -15,7 +15,7 @@ expand_margin_right = 1.0
 expand_margin_bottom = 1.0
 
 [node name="zoomable_image" type="TextureRect" unique_id=438356327]
-texture_filter = 4
+texture_filter = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

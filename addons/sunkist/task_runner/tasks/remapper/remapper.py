@@ -1,3 +1,4 @@
+# pyright: reportOptionalSubscript=false
 import argparse
 import configparser
 import os
@@ -308,7 +309,7 @@ class TargetImage:
 					## Limit to inside image
 					if px < 0 or px >= w or py < 0 or py >= h: continue
 					## Limit to non-blank pixels
-					if a_p[px, py] == 0: continue # pyright: ignore[reportOptionalSubscript]
+					if a_p[px, py] == 0: continue
 
 					neighbor = pixels[px, py]
 
@@ -324,19 +325,19 @@ class TargetImage:
 
 		for x in range(w):
 			for y in range(h):
-				if a_p[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_p[x, y] == 0: continue
 
 				neighbors = get_palette_neighbors((x, y), target_p)
 
 				if len(neighbors) == 0:
-					palette_p[x, y] = palettize(target_p[x, y], set(remap.palette.keys())) # pyright: ignore[reportOptionalSubscript]
+					palette_p[x, y] = palettize(target_p[x, y], set(remap.palette.keys()))
 
 		for x in range(w):
 			for y in range(h):
-				if a_p[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_p[x, y] == 0: continue
 
-				if not args.calculate_all and palette_p[x, y] in remap.palette: # pyright: ignore[reportOptionalSubscript]
-					target_p[x, y] = remap.palette[palette_p[x, y]] # pyright: ignore[reportOptionalSubscript]
+				if not args.calculate_all and palette_p[x, y] in remap.palette:
+					target_p[x, y] = remap.palette[palette_p[x, y]]
 					continue
 
 				neighbors = get_palette_neighbors((x, y), palette_p)
@@ -345,7 +346,7 @@ class TargetImage:
 				for k in remap.globals:
 					neighbors.add(k)
 
-				target_p[x, y] = blend(target_p[x, y], neighbors) # pyright: ignore[reportOptionalSubscript]
+				target_p[x, y] = blend(target_p[x, y], neighbors)
 
 		## Occlusion channel
 		occlusion_path : str = os.path.join(os.path.dirname(self.source), self.source_name[:-len(args.occlusion_suffix)] + args.occlusion_suffix + self.ext)
@@ -355,12 +356,12 @@ class TargetImage:
 
 			for x in range(w):
 				for y in range(h):
-					if a_p[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+					if a_p[x, y] == 0: continue
 
-					target_p[x, y] = ( # pyright: ignore[reportOptionalSubscript]
-						target_p[x, y][0], # pyright: ignore[reportOptionalSubscript]
-						target_p[x, y][1] + (255 - occ_p[x, y]), # pyright: ignore[reportOptionalSubscript]
-						target_p[x, y][2], # pyright: ignore[reportOptionalSubscript]
+					target_p[x, y] = (
+						target_p[x, y][0],
+						target_p[x, y][1] + (255 - occ_p[x, y]),
+						target_p[x, y][2],
 					)
 
 		self.target_image.convert("RGBA")
@@ -398,8 +399,8 @@ if __name__ == "__main__":
 	bus_set("output", "progress_max", len(targets))
 
 	for target in targets:
+		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
 		target.process()
-		sys.exit(0)
 
 	if progress < len(targets):
 		sys.stderr.write("\nNot all images were successfully processed.")

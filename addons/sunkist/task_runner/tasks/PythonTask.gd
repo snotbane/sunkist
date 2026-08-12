@@ -18,9 +18,34 @@ static func localize_script_path(path: String) -> String:
 		return OS.get_executable_path().get_base_dir().path_join("execute").path_join(result)
 
 
+static func serialize_palette(palette: ColorPalette) -> String:
+	var result := ""
+	for color in palette.colors:
+		result += color.to_html()
+	return result
+
+
+static func deserialize_palette(data: String) -> ColorPalette:
+	var colors := PackedColorArray()
+	colors.resize(data.length() / 8)
+	for i in colors.size():
+		colors[i] = Color.html(data.substr(i * 8, 8))
+
+	var result := ColorPalette.new()
+	result.colors = colors
+	return result
+
+
 static func value_as_python_argument(value: Variant) -> String:
 	if value is float and fmod(value, 1.0) == 0.0:
 		return str(int(value))
+
+	if value is Color:
+		return value.to_html()
+
+	elif value is ColorPalette:
+		return serialize_palette(value)
+
 	return str(value)
 
 

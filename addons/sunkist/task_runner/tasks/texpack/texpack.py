@@ -1,3 +1,4 @@
+# pyright: reportOptionalSubscript=false
 import argparse
 import configparser
 import json
@@ -194,25 +195,25 @@ class SourceImage(PathedImage):
 		rx, ry, rw, rh = [-1, -1, -1, -1]
 		for x in range(w):
 			for y in range(h):
-				if a_pixels[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_pixels[x, y] == 0: continue
 				rx = x
 				break
 			if rx != -1: break
 		for y in range(h):
 			for x in range(w):
-				if a_pixels[x, y] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_pixels[x, y] == 0: continue
 				ry = y
 				break
 			if ry != -1: break
 		for x in range(w):
 			for y in range(h):
-				if a_pixels[w-x-1, h-y-1] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_pixels[w-x-1, h-y-1] == 0: continue
 				rw = w - rx - x
 				break
 			if rw != -1: break
 		for y in range(h):
 			for x in range(w):
-				if a_pixels[w-x-1, h-y-1] == 0: continue # pyright: ignore[reportOptionalSubscript]
+				if a_pixels[w-x-1, h-y-1] == 0: continue
 				rh = h - ry - y
 				break
 			if rh != -1: break
