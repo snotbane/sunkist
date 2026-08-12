@@ -142,8 +142,6 @@ class PaletteRemap:
 
 			self.globals.add(k)
 
-		# print(f"globals : {self.globals}")
-
 
 	def __str__(self) -> str:
 		return self.palette.__str__()

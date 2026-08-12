@@ -82,7 +82,7 @@ var hole_size: int = 256:
 
 ## This feature fixes stray colors that exist between transparent pixels and any colors in [member feather_palette], removing them from the image.
 @export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
-var feather_enabled: bool = true:
+var feather_enabled: bool = false:
 	set(value):
 		if feather_enabled == value: return
 

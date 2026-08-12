@@ -81,7 +81,6 @@ func add_path_item(path: String):
 		item_target_paths[result] = item_source_paths[result]
 	else:
 		var subdirpath := path.get_base_dir().right(-task.itinerary.source.length())
-		print("subdirpath : %s" % [subdirpath])
 		if subdirpath:
 			item_target_paths[result] = task.itinerary.target.path_join(subdirpath).path_join(path.get_file())
 		else:
@@ -105,8 +104,6 @@ func open_item(item: TreeItem) -> void:
 
 
 func accept_item(item: TreeItem) -> void:
-	print("item_target_paths[item] : %s" % [item_target_paths[item]])
-
 	DirAccess.copy_absolute(get_temp_path(item_source_paths[item], NEW), item_target_paths[item])
 
 	remove_path_by_item(item)

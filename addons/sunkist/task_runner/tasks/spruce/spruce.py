@@ -7,7 +7,7 @@ import sys
 import time
 from PIL import Image
 
-
+SQRT_3 : float = 1.732050808
 SUPPORTED_EXTS = [".png", ".jpg", ".jpeg"]
 attempts: int = 0
 progress: int = 0
@@ -34,6 +34,17 @@ def str_to_color3_palette(s: str) -> Color3Palette:
 
 	return result
 
+
+def color3_distance(a: Color3, b: Color3) -> float:
+	rd = (a[0] - b[0]) / 255.0
+	gd = (a[1] - b[1]) / 255.0
+	bd = (a[2] - b[2]) / 255.0
+	dist = (rd * rd + gd * gd + bd * bd) ** 0.5
+
+	return dist / SQRT_3
+
+def color3_proximity(a: Color3, b: Color3) -> float:
+	return 1.0 - color3_distance(a, b)
 
 Color4 = tuple[int, int, int, int]
 
@@ -187,6 +198,10 @@ class TargetImage:
 			self._cleanup()
 
 	def _process(self):
+		# if os.path.exists(self.temp_target):
+		# 	print(f"Spruce :: Image already has pending changes: '{self.source}'")
+		# 	return
+
 		ri, gi, bi, ai = self.source_image.split()
 		r = ri.load()
 		g = gi.load()
@@ -197,14 +212,14 @@ class TargetImage:
 		diffmap : Image.Image = Image.new("RGBA", self.source_image.size)
 		diffmap_p = diffmap.load()
 
-		def add_to_diff(diff, hint: Color4):
+		def add_to_diff(diff, hint: Color4, m: int = 1):
 			for x in range(w):
 				for y in range(h):
 					diffmap_p[x, y] = (
-						diffmap_p[x, y][0] + hint[0] * diff[x, y],
-						diffmap_p[x, y][1] + hint[1] * diff[x, y],
-						diffmap_p[x, y][2] + hint[2] * diff[x, y],
-						diffmap_p[x, y][3] + hint[3] * diff[x, y],
+						diffmap_p[x, y][0] + round(float(hint[0]) * diff[x, y] / m),
+						diffmap_p[x, y][1] + round(float(hint[1]) * diff[x, y] / m),
+						diffmap_p[x, y][2] + round(float(hint[2]) * diff[x, y] / m),
+						diffmap_p[x, y][3] + round(float(hint[3]) * diff[x, y] / m),
 					)
 
 
@@ -333,26 +348,49 @@ class TargetImage:
 
 
 		def _process_feather():
+			return
+
+			distance_threshold = 0.5
+			island_size = 64
+
 			candidate_image = Image.new("1", self.source_image.size)
 			candidate = candidate_image.load()
 			visited_image = Image.new("1", self.source_image.size)
 			visited = visited_image.load()
 
+			distance_image = Image.new("L", self.source_image.size)
+			distance = distance_image.load()
+
+			palette_color = list(args.feather_palette)[0]
+
 			for x in range(w):
 				for y in range(h):
 					c: Color3 = (r[x, y], g[x, y], b[x, y])
+					dist: float = color3_distance(c, palette_color)
 					is_candidate = (
-						a[x, y] < 255
-						and a[x, y] > 0
-						and c not in args.feather_palette
+						a[x, y] > 0
+						# and a[x, y] < 255
+						and c != palette_color
+						# and c not in args.feather_palette
+						and dist > distance_threshold
 					)
 
 					candidate[x, y] = int(is_candidate)
 					visited[x, y] = 1 - candidate[x, y]
 
-			add_to_diff(candidate, args.feather_hint)
+					if is_candidate:
+						distance[x, y] = round(dist * 255)
 
-			palette_color = list(args.feather_palette)[0]
+			for x in range(w):
+				for y in range(h):
+					if visited[x, y]: continue
+
+					flood(candidate, visited, x, y, island_size)
+
+			add_to_diff(candidate, args.feather_hint, 1)
+			# add_to_diff(distance, args.feather_hint, 255)
+			add_to_diff(a, args.feather_hint, 1024)
+
 			for x in range(w):
 				for y in range(h):
 					if not candidate[x, y]: continue
@@ -433,7 +471,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	if args.feather_enabled:
-		print("Warning: feather_enabled is true. The feathering feature is currently very sloppy and currently only suitable for images which have a single line art color in feather_palette, and where the lineart completely encapsulates all opaque pixels.")
+		print("Warning: feather_enabled is true. This feature is not yet implemented.")
 
 	bus_path = args.bus_path
 	bus = configparser.ConfigParser()

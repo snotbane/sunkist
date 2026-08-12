@@ -408,8 +408,6 @@ def assign_compo_data(atlas: dict) -> dict:
 	return result
 
 if __name__ == "__main__":
-	# print("Hello???")
-
 	parser = argparse.ArgumentParser()
 	parser.add_argument("bus_path", type=str)
 	parser.add_argument("itinerary", type=str_to_itinerary)
