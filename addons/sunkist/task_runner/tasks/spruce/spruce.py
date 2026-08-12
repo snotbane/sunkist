@@ -198,9 +198,9 @@ class TargetImage:
 			self._cleanup()
 
 	def _process(self):
-		# if os.path.exists(self.temp_target):
-		# 	print(f"Spruce :: Image already has pending changes: '{self.source}'")
-		# 	return
+		if os.path.exists(self.temp_target):
+			print(f"Spruce :: Image already has pending changes: '{self.source}'")
+			return
 
 		ri, gi, bi, ai = self.source_image.split()
 		r = ri.load()
