@@ -448,7 +448,6 @@ if __name__ == "__main__":
 	for target in targets:
 		if bus_get("input", "stop"): sys.exit(45) ## ERR_SKIP
 		target.process()
-		sys.exit(0)
 
 	if progress < len(targets):
 		sys.stderr.write("\nNot all images were successfully processed.")
