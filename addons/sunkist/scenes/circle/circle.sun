@@ -1,0 +1,1 @@
+{"sheet": {"circle-n.png": {"circle-r-n": [2, 2, 1, 1, 126, 126]}, "circle-a.png": {"circle-r-a": [2, 2, 1, 1, 126, 126]}, "circle-m.png": {"circle-r-m": [2, 2, 1, 1, 126, 126]}}, "sunkist": {"circle": {"-r-n": "circle-r-n", "-r-m": "circle-r-m", "-r-a": "circle-r-a", "-l-n": "circle-r-n", "-l-m": "circle-r-m", "-l-a": "circle-r-a"}}}

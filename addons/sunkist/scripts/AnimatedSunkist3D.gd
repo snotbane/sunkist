@@ -20,6 +20,13 @@ extends AnimatedSprite3D
 	get: return get_instance_shader_parameter(&"_popout_depth") * 10_000
 	set(value): set_instance_shader_parameter(&"_popout_depth", 0.00_01 * value)
 
+## This value is directly linked to [member centered], but it also calls [member _size_changed] when set. Always use this instead of [member centered].
+@export
+var centered_smart: bool = true:
+	get: return centered
+	set(value):
+		centered = value
+		_size_changed()
 
 @onready var sunkist_parent: SunkistContainer3D = Sunkist3D.get_sunkist_ancestor(self)
 
@@ -70,17 +77,7 @@ func _size_changed() -> void:
 
 
 func set_position_to_texture_offset(texture: SunkistTexture) -> void:
-	if texture == null: return
-
-	var texture_size := texture.get_size()
-	var flat := texture.offset_default * Sunkist3D.OFFSET_FLIP - Vector2(0.0, texture_size.y)
-
-	if centered: flat += texture_size * 0.5
-
-	flat *= pixel_size
-
-	position = Vector3(
-		flat.x,
-		flat.y,
-		position.z
-	)
+	if centered:
+		offset = Vector2.ZERO
+	elif texture:
+		offset = texture.offset_default * Sunkist3D.OFFSET_FLIP - Vector2.UP * texture.get_size().y

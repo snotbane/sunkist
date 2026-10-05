@@ -6,7 +6,7 @@
 
 [node name="LaigterTask" unique_id=1312519783 instance=ExtResource("1_8wuje")]
 script = ExtResource("2_o230u")
-laigter_path = "/home/snotbane/Applications/Laigter/Laigter-x86_64.AppImage"
+laigter_path = "/var/lib/flatpak/exports/bin/io.itch.azagaya.Laigter"
 preset_path = ""
 python_venv_path = "res://addons/sunkist/.venv"
 itinerary = null

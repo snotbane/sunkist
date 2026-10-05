@@ -80,6 +80,7 @@ func _save_args(result: Dictionary) -> void:
 		&"global_colors": global_colors,
 		&"neighbor_radius": neighbor_radius,
 		&"blend_iterations": blend_iterations,
+		&"calculate_all": calculate_all,
 		&"occlusion_suffix": occlusion_suffix,
 	})
 
