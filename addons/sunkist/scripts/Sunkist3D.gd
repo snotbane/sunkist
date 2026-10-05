@@ -84,4 +84,4 @@ func set_position_to_texture_offset(texture: SunkistTexture) -> void:
 	if centered:
 		offset = Vector2.ZERO
 	elif texture:
-		offset = texture.offset_default * OFFSET_FLIP + Vector2.UP * texture.get_size().y
+		offset = Vector2.UP * texture.get_size().y + texture.offset_default * Sunkist3D.OFFSET_FLIP
