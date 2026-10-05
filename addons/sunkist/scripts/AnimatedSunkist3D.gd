@@ -76,8 +76,8 @@ func _size_changed() -> void:
 	set_position_to_texture_offset(material_override.texture)
 
 
-func set_position_to_texture_offset(texture: SunkistTexture) -> void:
+func set_position_to_texture_offset(__texture__: SunkistTexture) -> void:
 	if centered:
 		offset = Vector2.ZERO
-	elif texture:
-		offset = Vector2.UP * texture.get_size().y + texture.offset_default * Sunkist3D.OFFSET_FLIP
+	elif __texture__:
+		offset = Vector2.UP * __texture__.get_size().y + __texture__.offset_default * Sunkist3D.OFFSET_FLIP
