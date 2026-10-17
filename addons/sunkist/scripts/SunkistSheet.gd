@@ -1,5 +1,5 @@
 ## Manages SunkistSheet data files and generates/updates sub-resources, including multiple [SunkistAtlasTexture] and [SunkistTexture].
-@icon("res://addons/sunkist/ui/icons/SunkistTexture.svg")
+# @icon("res://addons/sunkist/ui/icons/SunkistTexture.svg")
 @tool
 class_name SunkistSheet
 extends Resource
