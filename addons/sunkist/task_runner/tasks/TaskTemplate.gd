@@ -2,13 +2,17 @@
 class_name TaskTemplate
 extends Resource
 
-@export var name: String
+@export
+var name: String
 
-@export_multiline var description: String
+@export_multiline
+var description: String
 
-@export var icon: Texture2D
+@export
+var icon: Texture2D
 
-@export var _scene_uid: String
+@export
+var _scene_uid: String
 
 var scene: PackedScene:
 	get: return load(_scene_uid)

@@ -13,7 +13,8 @@ static func get_sunkist_ancestor(node: Node) -> SunkistContainer3D:
 
 
 ## If enabled, this will use a clone of an ancestor's [SunkistContainer3D.material_template].
-@export var use_container_template: bool = true:
+@export
+var use_container_template: bool = true:
 	set(value):
 		use_container_template = value
 
@@ -26,7 +27,8 @@ static func get_sunkist_ancestor(node: Node) -> SunkistContainer3D:
 
 
 ## This will set an instance shader parameter which ensures the sprite will stay in its proper depth and helps prevent texture fighting, even when facing the opposite direction. Represented as an [int] value for simplicity, but actually translates to a [float] value. Elements which share the same [member popout_layer] are prone to texture fighting.
-@export_range(-128, 128, 1, "or_greater", "or_less") var popout_layer: int = 0:
+@export_range(-128, 128, 1, "or_greater", "or_less")
+var popout_layer: int = 0:
 	set(value):
 		popout_layer = value
 		set_instance_shader_parameter(&"_popout_depth", 0.00_01 * value)

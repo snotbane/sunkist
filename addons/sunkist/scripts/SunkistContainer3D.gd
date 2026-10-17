@@ -12,19 +12,22 @@ signal preview_changed
 signal material_changed
 
 
-@export var size := Vector2.ZERO:
+@export
+var size := Vector2.ZERO:
 	set(value):
 		size = value
 		_refresh_position()
 
 
-@export_range(0.0001, 1.0, 0.0001, "or_greater", "prefer_slider") var pixel_size: float = 0.001:
+@export_range(0.0001, 1.0, 0.0001, "or_greater", "prefer_slider")
+var pixel_size: float = 0.001:
 	set(value):
 		pixel_size = value
 		_refresh_position()
 
 
-@export var material_template: SunkistMaterial:
+@export
+var material_template: SunkistMaterial:
 	set(value):
 		if material_template:
 			material_template.changed.disconnect(material_changed.emit)
@@ -39,7 +42,8 @@ signal material_changed
 
 @export_subgroup("Preview", "_preview_")
 
-@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var _preview_enabled: bool = false:
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
+var _preview_enabled: bool = false:
 	set(value):
 		_preview_enabled = value
 		preview_changed.emit()
@@ -49,13 +53,15 @@ signal material_changed
 		_canvas_meshinst.visible = _preview_enabled
 
 
-@export var _preview_mirrored: bool = false:
+@export
+var _preview_mirrored: bool = false:
 	set(value):
 		_preview_mirrored = value
 		preview_changed.emit()
 
 
-@export var _preview_component: int = 0:
+@export
+var _preview_component: int = 0:
 	set(value):
 		_preview_component = value
 		preview_changed.emit()

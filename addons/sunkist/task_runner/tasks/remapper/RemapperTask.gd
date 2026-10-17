@@ -1,10 +1,12 @@
 @tool
 extends PythonTask
 
-@export var remap: ColorRemap
+@export
+var remap: ColorRemap
 
 ## This value determines how many [member remap.source.colors] are treated as global. Global colors are evaluated if a non-palette pixel has only one palette neighbor. Primarily used for lineart colors.
-@export_range(0, 10, 1, "or_greater") var global_colors = 0:
+@export_range(0, 10, 1, "or_greater")
+var global_colors = 0:
 	set(value):
 		if global_colors == value: return
 
@@ -14,7 +16,8 @@ extends PythonTask
 
 
 ## This value determines how far each pixel should reach to find neighbors that belong to the palette. Higher values are less efficient, and not necessarily more accurate. Fine tune to get a good balance, based on your image resolution. A good value is usually double the size of the line art's brush feather size.
-@export_range(0, 10, 1, "or_greater") var neighbor_radius = 2:
+@export_range(0, 10, 1, "or_greater")
+var neighbor_radius = 2:
 	set(value):
 		if neighbor_radius == value: return
 
@@ -24,7 +27,8 @@ extends PythonTask
 
 
 ## This value controls the quality of the final remap result. Linearly increases computation time; logarithmically increases accuracy. Try to set this as high as you can tolerate for production. Use lower values to test out palettes.
-@export_range(0, 1000, 10, "or_greater") var blend_iterations = 100:
+@export_range(0, 1000, 10, "or_greater")
+var blend_iterations = 100:
 	set(value):
 		if blend_iterations == value: return
 
@@ -34,7 +38,8 @@ extends PythonTask
 
 
 ## If enabled, this will check neighbors on ALL pixels, even pixels that already match a palette color. This VASTLY increases computation time, but will correct blended/feathered pixels that happen to fall on palette colors.
-@export var calculate_all: bool = false:
+@export
+var calculate_all: bool = false:
 	set(value):
 		if calculate_all == value: return
 
@@ -44,7 +49,8 @@ extends PythonTask
 
 
 ## If a file with this suffix exists, add it to the green channel of the resulting image.
-@export var occlusion_suffix: String = "o":
+@export
+var occlusion_suffix: String = "o":
 	set(value):
 		if occlusion_suffix == value: return
 

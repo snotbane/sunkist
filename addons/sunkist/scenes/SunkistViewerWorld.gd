@@ -3,7 +3,8 @@ extends Node3D
 
 
 var _edited_resource: SunkistTexture
-@export var edited_resource: SunkistTexture:
+@export
+var edited_resource: SunkistTexture:
 	get: return _edited_resource
 	set(value):
 		if _edited_resource == value: return

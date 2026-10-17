@@ -1,7 +1,8 @@
 @tool
 extends GridContainer
 
-@export var buttons_disabled_while_running: Array[Button]
+@export
+var buttons_disabled_while_running: Array[Button]
 
 
 func _on_task_tree_started() -> void:

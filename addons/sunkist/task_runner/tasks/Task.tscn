@@ -9,7 +9,8 @@ resource_name = "ExecuteButton"
 script/source = "
 @tool extends Button
 
-@export var task : Task
+@export
+var task : Task
 
 func _pressed() -> void:
 	match task.status:

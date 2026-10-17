@@ -2,7 +2,8 @@
 class_name ColorRemap
 extends Resource
 
-@export var source: ColorPalette:
+@export
+var source: ColorPalette:
 	set(value):
 		if source == value: return
 
@@ -17,7 +18,8 @@ extends Resource
 		emit_changed()
 
 
-@export var target: ColorPalette:
+@export
+var target: ColorPalette:
 	set(value):
 		if target == value: return
 

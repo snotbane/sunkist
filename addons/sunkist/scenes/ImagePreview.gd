@@ -10,7 +10,8 @@ extends Control
 
 
 var _label: String
-@export var label: String:
+@export
+var label: String:
 	get: return _label
 	set(value):
 		_label = value
@@ -21,14 +22,16 @@ var _label: String
 		name_label.visible = not _label.is_empty()
 
 
-@export var show_path: bool = true:
+@export
+var show_path: bool = true:
 	get: return path_label.visible if path_label else true
 	set(value):
 		if not path_label: return
 		path_label.visible = value
 
 
-@export_enum("Auto", "Manual") var path_mode: int = 0:
+@export_enum("Auto", "Manual")
+var path_mode: int = 0:
 	set(value):
 		if path_mode == value: return
 		path_mode = value
@@ -36,7 +39,8 @@ var _label: String
 		refresh()
 
 
-@export var path_text: String:
+@export
+var path_text: String:
 	get: return path_label.text if path_label else ""
 	set(value):
 		if not path_label: return
@@ -46,7 +50,8 @@ var _label: String
 		refresh()
 
 
-@export_storage var value: String:
+@export_storage
+var value: String:
 	get: return path_label.text if path_label else ""
 	set(val):
 		if not path_label or value == val: return
@@ -57,7 +62,8 @@ var _label: String
 
 @export_subgroup("Slot Label", "slot_")
 
-@export_custom(PROPERTY_HINT_GROUP_ENABLE, "") var slot_enabled: bool = false:
+@export_custom(PROPERTY_HINT_GROUP_ENABLE, "")
+var slot_enabled: bool = false:
 	set(value):
 		slot_enabled = value
 		if not is_node_ready():
@@ -66,7 +72,8 @@ var _label: String
 		%slot_label.visible = slot_enabled
 
 
-@export var slot_index: int = 0:
+@export
+var slot_index: int = 0:
 	set(value):
 		slot_index = value
 		%slot_label.text = ("L" if slot_index & 1 else "R") + str(slot_index / 2)

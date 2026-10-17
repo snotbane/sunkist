@@ -3,7 +3,8 @@ class_name AnimatedSunkist3D
 extends AnimatedSprite3D
 
 ## If enabled, this will use a clone of an ancestor's [member SunkistContainer3D.material_template].
-@export var use_container_template: bool = true:
+@export
+var use_container_template: bool = true:
 	set(value):
 		use_container_template = value
 
@@ -16,7 +17,8 @@ extends AnimatedSprite3D
 
 
 ## This will set an instance shader parameter which ensures the sprite will stay in its proper depth, even when facing the opposite direction. Represented as an [int] value for simplicity, but actually translates to a [float] value.
-@export_range(-128, 128, 1, "or_greater", "or_less") var popout_layer: int = 0:
+@export_range(-128, 128, 1, "or_greater", "or_less")
+var popout_layer: int = 0:
 	get: return get_instance_shader_parameter(&"_popout_depth") * 10_000
 	set(value): set_instance_shader_parameter(&"_popout_depth", 0.00_01 * value)
 

@@ -1,7 +1,8 @@
 @tool
 extends CheckBox
 
-@export var link: Node
+@export
+var link: Node
 
 
 func _ready() -> void:

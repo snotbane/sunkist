@@ -36,7 +36,8 @@ var spot_size: int = 256:
 
 
 ## Color used in the diff map. This has no effect on the final image; purely for assistance.
-@export var spot_hint := Color.RED
+@export
+var spot_hint := Color.RED
 
 
 @export_group("Hole Filling", "hole_")
@@ -75,7 +76,8 @@ var hole_size: int = 256:
 
 
 ## Color used in the diff map. This has no effect on the final image; purely for assistance.
-@export var hole_hint := Color.GREEN
+@export
+var hole_hint := Color.GREEN
 
 
 @export_group("Feather Cleanup", "feather_")
@@ -92,11 +94,13 @@ var feather_enabled: bool = false:
 
 
 ## Colors designated as lineart.
-@export var feather_palette: ColorPalette
+@export
+var feather_palette: ColorPalette
 
 
 ## Color used in the diff map. This has no effect on the final image; purely for assistance.
-@export var feather_hint := Color.BLUE
+@export
+var feather_hint := Color.BLUE
 
 
 func _get_python_script_path() -> String:

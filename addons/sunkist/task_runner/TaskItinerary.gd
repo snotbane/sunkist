@@ -7,7 +7,8 @@ static func validate_regex_string(rx: String) -> bool:
 
 
 ## The location of the source file or folder.
-@export_global_dir var source: String:
+@export_global_dir
+var source: String:
 	set(value):
 		if source == value: return
 
@@ -15,7 +16,8 @@ static func validate_regex_string(rx: String) -> bool:
 		emit_changed()
 
 ## The destination of the target file or folder. If unset, use the same directory as [member source].
-@export_global_dir var target: String:
+@export_global_dir
+var target: String:
 	set(value):
 		if target == value: return
 
@@ -27,7 +29,8 @@ var target_safe: String:
 
 
 ## Include regex filter. Filters to include only files whose names (not including directory or extension) match.
-@export var include: String = r"":
+@export
+var include: String = r"":
 	set(value):
 		if include == value: return
 
@@ -40,7 +43,8 @@ var include_regex := RegEx.new()
 
 
 ## Exclude regex filter. Filters to exclude any files whose names (not including directory or extension) match.
-@export var exclude: String = r"":
+@export
+var exclude: String = r"":
 	set(value):
 		if exclude == value: return
 
@@ -52,7 +56,8 @@ var include_regex := RegEx.new()
 var exclude_regex := RegEx.new()
 
 ## Pattern which will be removed in the target file name.
-@export var rename_filter: String = r"":
+@export
+var rename_filter: String = r"":
 	set(value):
 		if rename_filter == value: return
 
@@ -65,7 +70,8 @@ var rename_regex := RegEx.new()
 
 
 ## Text to replace [member rename_filter] with in the target file name. If [member rename_filter] is not specified, this string will be appended to the end.
-@export var rename_replace: String = r"":
+@export
+var rename_replace: String = r"":
 	set(value):
 		if rename_replace == value: return
 
@@ -74,7 +80,8 @@ var rename_regex := RegEx.new()
 
 
 ## If enabled, the process will overwrite the target file if it already exists. If disabled, the process will skip any files that already exist.
-@export var overwrite: bool = true:
+@export
+var overwrite: bool = true:
 	set(value):
 		if overwrite == value: return
 

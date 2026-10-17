@@ -1,11 +1,14 @@
 @tool
 extends TextureRect
 
-@export var sub_window_size := Vector2i(256, 256)
+@export
+var sub_window_size := Vector2i(256, 256)
 
-@export var expand_speed := 100.0
+@export
+var expand_speed := 100.0
 
-@export var focused_z_index: int = 10
+@export
+var focused_z_index: int = 10
 
 
 @onready var zoom_control: Control = $zoom_control

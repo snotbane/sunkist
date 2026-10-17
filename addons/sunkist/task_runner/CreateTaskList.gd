@@ -2,7 +2,8 @@
 extends HFlowContainer
 
 var _templates: Array[TaskTemplate]
-@export var templates: Array[TaskTemplate]:
+@export
+var templates: Array[TaskTemplate]:
 	get: return _templates
 	set(value):
 		if _templates == value: return

@@ -3,7 +3,8 @@ extends PythonTask
 
 
 ## Path of the Laigter executable. See the Laigter documentation on how to install or where to find.
-@export_global_file var laigter_path: String:
+@export_global_file
+var laigter_path: String:
 	get:
 		if not TaskRunner.inst: return ""
 		return TaskRunner.inst.get_meta(&"laigter_path", "")
@@ -16,7 +17,8 @@ extends PythonTask
 
 
 ## Path of the Laigter preset file. This must be manually created in the Laigter app.
-@export_global_file var preset_path: String:
+@export_global_file
+var preset_path: String:
 	set(value):
 		if preset_path == value: return
 

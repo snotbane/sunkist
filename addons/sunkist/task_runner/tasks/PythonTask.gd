@@ -49,7 +49,8 @@ static func value_as_python_argument(value: Variant) -> String:
 	return str(value)
 
 
-@export_global_dir var python_venv_path: String:
+@export_global_dir
+var python_venv_path: String:
 	get: return TaskRunner.inst.python_venv_path
 	set(value):
 		if not is_node_ready():
@@ -57,7 +58,8 @@ static func value_as_python_argument(value: Variant) -> String:
 
 		TaskRunner.inst.python_venv_path = value
 
-@export var itinerary: TaskItinerary:
+@export
+var itinerary: TaskItinerary:
 	set(value):
 		if itinerary == value: return
 
@@ -74,7 +76,8 @@ static func value_as_python_argument(value: Variant) -> String:
 				itinerary.changed.connect(validate_args)
 
 
-# @export_tool_button("Install Python Venv") var install_venv_button := TaskRunner.inst.install_venv_button
+# @export_tool_button("Install Python Venv")
+var install_venv_button := TaskRunner.inst.install_venv_button
 
 
 var python_exe_path: String:

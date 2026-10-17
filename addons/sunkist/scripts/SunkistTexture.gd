@@ -2,7 +2,8 @@
 class_name SunkistTexture
 extends Texture2D
 
-@export var textures: Array[Texture2D]
+@export
+var textures: Array[Texture2D]
 
 
 var texture_default: Texture2D:

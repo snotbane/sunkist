@@ -19,7 +19,8 @@ static func bytes_to_string(bytes: int) -> String:
 	return "%.2f GB" % (float(bytes) / SIZE_GB)
 
 
-@export var optipng_path: String:
+@export
+var optipng_path: String:
 	get:
 		if not TaskRunner.inst: return ""
 		return TaskRunner.inst.get_meta(&"optipng_path", "")

@@ -25,13 +25,17 @@ const ICON_INSPECT := preload("res://addons/sunkist/ui/icons/ExternalLink.svg")
 const ICON_REJECT := preload("res://addons/sunkist/ui/icons/ImportFail.svg")
 
 
-@export var task: PythonTask
+@export
+var task: PythonTask
 
-@export var old_preview: ImagePreview
+@export
+var old_preview: ImagePreview
 
-@export var new_preview: ImagePreview
+@export
+var new_preview: ImagePreview
 
-@export var diff_bitmap: ImagePreview
+@export
+var diff_bitmap: ImagePreview
 
 
 var root: TreeItem

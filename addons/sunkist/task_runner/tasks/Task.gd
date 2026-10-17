@@ -69,7 +69,8 @@ signal abort_requested
 signal finished(code: int)
 
 
-@export_storage var template: TaskTemplate
+@export_storage
+var template: TaskTemplate
 
 
 @onready var stopwatch := SunkistStopwatch.new()
@@ -85,7 +86,8 @@ signal finished(code: int)
 
 var _comment: String = ""
 ## Custom comment to label this [Task]. Resets to a default value determined by the type of [Task] being called.
-@export var comment: String = "":
+@export
+var comment: String = "":
 	get: return _comment
 	set(value):
 		if _comment == value: return

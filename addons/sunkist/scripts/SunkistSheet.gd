@@ -28,7 +28,8 @@ static var REMAP_ARRAY_DEFAULT: PackedStringArray = [
 @export_tool_button("Refresh Resources")
 var _refresh_resources_tool_button : Callable = refresh_resources
 
-@export_storage var json_path: String
+@export_storage
+var json_path: String
 
 
 func _get_remap_index(key: StringName) -> int:
