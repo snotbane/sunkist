@@ -2,20 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://br4ynf80blhws"
-path="res://.godot/imported/circle-n.png-14264e46e4e3c33e914656e4a0557aa5.ctex"
+uid="uid://bkymbe0d5us1o"
+path.s3tc="res://.godot/imported/icon-n.png-ed187b6ba425503c4cca34cddb46f3f9.s3tc.ctex"
+path.etc2="res://.godot/imported/icon-n.png-ed187b6ba425503c4cca34cddb46f3f9.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://addons/sunkist/scenes/circle/sheet/circle-n.png"
-dest_files=["res://.godot/imported/circle-n.png-14264e46e4e3c33e914656e4a0557aa5.ctex"]
+source_file="res://addons/sunkist/scenes/circle/sheet/icon-n.png"
+dest_files=["res://.godot/imported/icon-n.png-ed187b6ba425503c4cca34cddb46f3f9.s3tc.ctex", "res://.godot/imported/icon-n.png-ed187b6ba425503c4cca34cddb46f3f9.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

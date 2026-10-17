@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://y0oyvib28nk4"
-path.s3tc="res://.godot/imported/circle-r-a.png-827905d4fd7ccff243d8f1f965265286.s3tc.ctex"
-path.etc2="res://.godot/imported/circle-r-a.png-827905d4fd7ccff243d8f1f965265286.etc2.ctex"
+uid="uid://cigfvuvuyyma6"
+path.s3tc="res://.godot/imported/icon-a.png-6258b1b5c1e8df4c3f237154dec731f0.s3tc.ctex"
+path.etc2="res://.godot/imported/icon-a.png-6258b1b5c1e8df4c3f237154dec731f0.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://inbox/circle-r-a.png"
-dest_files=["res://.godot/imported/circle-r-a.png-827905d4fd7ccff243d8f1f965265286.s3tc.ctex", "res://.godot/imported/circle-r-a.png-827905d4fd7ccff243d8f1f965265286.etc2.ctex"]
+source_file="res://addons/sunkist/scenes/circle/sheet/icon-a.png"
+dest_files=["res://.godot/imported/icon-a.png-6258b1b5c1e8df4c3f237154dec731f0.s3tc.ctex", "res://.godot/imported/icon-a.png-6258b1b5c1e8df4c3f237154dec731f0.etc2.ctex"]
 
 [params]
 

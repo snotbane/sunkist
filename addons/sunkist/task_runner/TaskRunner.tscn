@@ -21,53 +21,6 @@
 [ext_resource type="Resource" uid="uid://3fhy7na0ubj1" path="res://addons/sunkist/task_runner/tasks/remapper/remapper.tres" id="19_dda8a"]
 [ext_resource type="Script" uid="uid://6eldrawh61aa" path="res://addons/sunkist/task_runner/TaskContainer.gd" id="19_g0as0"]
 
-[sub_resource type="InputEventKey" id="InputEventKey_xs2sm"]
-device = -1
-command_or_control_autoremap = true
-keycode = 78
-unicode = 110
-
-[sub_resource type="Shortcut" id="Shortcut_y17js"]
-events = [SubResource("InputEventKey_xs2sm")]
-
-[sub_resource type="InputEventKey" id="InputEventKey_qtrbu"]
-device = -1
-command_or_control_autoremap = true
-keycode = 83
-unicode = 115
-
-[sub_resource type="Shortcut" id="Shortcut_tthtu"]
-events = [SubResource("InputEventKey_qtrbu")]
-
-[sub_resource type="InputEventKey" id="InputEventKey_s6s3o"]
-device = -1
-command_or_control_autoremap = true
-shift_pressed = true
-keycode = 83
-unicode = 83
-
-[sub_resource type="Shortcut" id="Shortcut_qtrbu"]
-events = [SubResource("InputEventKey_s6s3o")]
-
-[sub_resource type="InputEventKey" id="InputEventKey_tthtu"]
-device = -1
-command_or_control_autoremap = true
-keycode = 79
-unicode = 111
-
-[sub_resource type="Shortcut" id="Shortcut_f2ono"]
-events = [SubResource("InputEventKey_tthtu")]
-
-[sub_resource type="InputEventKey" id="InputEventKey_iuqo7"]
-device = -1
-command_or_control_autoremap = true
-shift_pressed = true
-keycode = 79
-unicode = 79
-
-[sub_resource type="Shortcut" id="Shortcut_xs2sm"]
-events = [SubResource("InputEventKey_iuqo7")]
-
 [sub_resource type="GDScript" id="GDScript_lpup6"]
 resource_name = "GlobalSettingsButton"
 script/source = "@tool extends Button
@@ -75,15 +28,6 @@ script/source = "@tool extends Button
 func _pressed() -> void:
 	EditorInterface.edit_node(get_child(0))
 "
-
-[sub_resource type="InputEventKey" id="InputEventKey_f2ono"]
-device = -1
-command_or_control_autoremap = true
-keycode = 82
-unicode = 114
-
-[sub_resource type="Shortcut" id="Shortcut_iuqo7"]
-events = [SubResource("InputEventKey_f2ono")]
 
 [sub_resource type="GDScript" id="GDScript_a2pxq"]
 resource_name = "RunStopButton"
@@ -171,7 +115,6 @@ size_flags_horizontal = 3
 [node name="new" type="Button" parent="tab_container/main_split/task_manager/vbox/manager_buttons/save" unique_id=2143750591]
 layout_mode = 2
 tooltip_text = "Create a new queue."
-shortcut = SubResource("Shortcut_y17js")
 icon = ExtResource("3_fiahh")
 
 [node name="confirmation_dialog" type="ConfirmationDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/save/new" unique_id=1420907613]
@@ -185,14 +128,12 @@ dialog_autowrap = true
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Save the current configuration and overwrite."
-shortcut = SubResource("Shortcut_tthtu")
 text = "Save"
 icon = ExtResource("4_fwp3f")
 
 [node name="as_new" type="Button" parent="tab_container/main_split/task_manager/vbox/manager_buttons/save" unique_id=1711521401]
 layout_mode = 2
 tooltip_text = "Save the current configuration as a new JSON file."
-shortcut = SubResource("Shortcut_qtrbu")
 icon = ExtResource("5_ug6gf")
 
 [node name="file_dialog" type="FileDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/save" unique_id=1169001965]
@@ -208,7 +149,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_horizontal = 3
 tooltip_text = "Load a JSON file into the queue."
-shortcut = SubResource("Shortcut_f2ono")
 text = "Load"
 icon = ExtResource("6_t80lc")
 
@@ -221,7 +161,6 @@ use_native_dialog = true
 [node name="append" type="Button" parent="tab_container/main_split/task_manager/vbox/manager_buttons/load" unique_id=1707211570]
 layout_mode = 2
 tooltip_text = "Load a JSON file and add it to the existing queue."
-shortcut = SubResource("Shortcut_xs2sm")
 icon = ExtResource("7_kuq7v")
 
 [node name="file_dialog" type="FileDialog" parent="tab_container/main_split/task_manager/vbox/manager_buttons/load/append" unique_id=851303745]
@@ -249,7 +188,6 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_horizontal = 3
 toggle_mode = true
-shortcut = SubResource("Shortcut_iuqo7")
 text = "Run Queue"
 icon = ExtResource("10_njcoc")
 script = SubResource("GDScript_a2pxq")

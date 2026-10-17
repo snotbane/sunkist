@@ -7,3 +7,4 @@
 *.kra*
 *.png~
 .DS_Store
+test/

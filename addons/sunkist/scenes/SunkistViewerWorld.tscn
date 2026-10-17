@@ -1,12 +1,10 @@
 [gd_scene format=3 uid="uid://c5fib1mm65yc2"]
 
 [ext_resource type="Script" uid="uid://b8j3gwojs87by" path="res://addons/sunkist/scripts/SunkistMaterial.gd" id="2_8fsea"]
-[ext_resource type="Texture2D" uid="uid://caqkc8kisx1q0" path="res://addons/sunkist/scenes/circle/sprite/circle-r-a.res" id="3_02u0b"]
 [ext_resource type="Shader" uid="uid://cdufaegr5ju4f" path="res://addons/sunkist/shaders/Sunkist3D_Scissor.gdshader" id="3_wd3j0"]
+[ext_resource type="Texture2D" uid="uid://bo1fe2sarttqx" path="res://addons/sunkist/scenes/circle/sprite/icon-r-a.res" id="3_x3kaw"]
+[ext_resource type="Texture2D" uid="uid://3rey08mas1a3" path="res://addons/sunkist/scenes/circle/sprite/icon-r-n.res" id="4_0haou"]
 [ext_resource type="Script" uid="uid://4pvyu6khy3e1" path="res://addons/sunkist/scripts/Sunkist3D.gd" id="5_cfds6"]
-[ext_resource type="Texture2D" uid="uid://cay2p1w25ksqt" path="res://addons/sunkist/scenes/circle/sprite/circle-r-m.res" id="5_oc0ql"]
-[ext_resource type="Texture2D" uid="uid://xn1lqgm7j3ph" path="res://addons/sunkist/scenes/circle/sprite/circle-r-n.res" id="6_byjmb"]
-[ext_resource type="Texture2D" uid="uid://bbq11ixfgyuld" path="res://addons/sunkist/scenes/circle/sunkist/circle.res" id="7_saxgq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ldu7x"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -37,8 +35,10 @@ func _ready() -> void:
 	var cursor = self
 	while cursor != null and cursor is not SubViewportContainer:
 		cursor = cursor.get_parent()
+	if cursor == null:
+		return
+		
 	svpc = cursor
-
 	svpc.gui_input.connect((func(event: InputEvent) -> void:
 		if event is InputEventMouseButton:
 			match event.button_index:
@@ -56,6 +56,10 @@ func _ready() -> void:
 
 func reset() -> void:
 	rotation = Vector3.ZERO
+	if %sunkist.texture == null:
+		return
+		
+	%sunkist.pixel_size = 1.0 / %sunkist.texture.get_size().y
 "
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_i3v8w"]
@@ -69,21 +73,19 @@ shader_parameter/roughness = 1.0
 shader_parameter/specular = 1.0
 shader_parameter/metallic = 1.0
 shader_parameter/normal_scale = 0.5
-shader_parameter/_r_a = ExtResource("3_02u0b")
-shader_parameter/_r_a_rect = Vector4(2, 2, 126, 126)
+shader_parameter/_r_a = ExtResource("3_x3kaw")
+shader_parameter/_r_a_rect = Vector4(2, 2, 448, 449)
 shader_parameter/_r_a_offset = Vector2(0, 0)
-shader_parameter/_l_a = ExtResource("3_02u0b")
-shader_parameter/_l_a_rect = Vector4(2, 2, 126, 126)
+shader_parameter/_l_a = ExtResource("3_x3kaw")
+shader_parameter/_l_a_rect = Vector4(2, 2, 448, 449)
 shader_parameter/_r_e_rect = Vector4(0, 0, 0, 0)
 shader_parameter/_l_e_rect = Vector4(0, 0, 0, 0)
-shader_parameter/_r_m = ExtResource("5_oc0ql")
 shader_parameter/_r_m_rect = Vector4(2, 2, 126, 126)
-shader_parameter/_l_m = ExtResource("5_oc0ql")
 shader_parameter/_l_m_rect = Vector4(2, 2, 126, 126)
-shader_parameter/_r_n = ExtResource("6_byjmb")
-shader_parameter/_r_n_rect = Vector4(2, 2, 126, 126)
-shader_parameter/_l_n = ExtResource("6_byjmb")
-shader_parameter/_l_n_rect = Vector4(2, 2, 126, 126)
+shader_parameter/_r_n = ExtResource("4_0haou")
+shader_parameter/_r_n_rect = Vector4(2, 2, 448, 449)
+shader_parameter/_l_n = ExtResource("4_0haou")
+shader_parameter/_l_n_rect = Vector4(2, 2, 448, 449)
 script = ExtResource("2_8fsea")
 unique_backface = true
 
@@ -104,10 +106,10 @@ far = 10.0
 transform = Transform3D(0.6643573, -0.4597668, 0.589274, 0.07138719, 0.8238449, 0.56230193, -0.7439981, -0.33150274, 0.5801488, 0, 0, 0)
 
 [node name="sunkist" type="Sprite3D" parent="." unique_id=1878202278]
+unique_name_in_owner = true
 transform = Transform3D(0.99999964, 0, 0, 0, 0.9999999, 0, 0, 0, 0.99999964, 0, 0, 0)
 material_override = SubResource("ShaderMaterial_i3v8w")
-pixel_size = 0.007936508
-texture = ExtResource("7_saxgq")
+pixel_size = 0.0078125
 script = ExtResource("5_cfds6")
 metadata/_custom_type_script = "uid://4pvyu6khy3e1"
 
