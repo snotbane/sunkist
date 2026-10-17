@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://b8j3gwojs87by" path="res://addons/sunkist/scripts/SunkistMaterial.gd" id="2_8fsea"]
 [ext_resource type="Shader" uid="uid://cdufaegr5ju4f" path="res://addons/sunkist/shaders/Sunkist3D_Scissor.gdshader" id="3_wd3j0"]
-[ext_resource type="Texture2D" uid="uid://bo1fe2sarttqx" path="res://addons/sunkist/scenes/circle/sprite/icon-r-a.res" id="3_x3kaw"]
-[ext_resource type="Texture2D" uid="uid://3rey08mas1a3" path="res://addons/sunkist/scenes/circle/sprite/icon-r-n.res" id="4_0haou"]
+[ext_resource type="Texture2D" uid="uid://bo1fe2sarttqx" path="res://addons/sunkist/scenes/icon/sprite/icon-r-a.res" id="3_x3kaw"]
+[ext_resource type="Texture2D" uid="uid://3rey08mas1a3" path="res://addons/sunkist/scenes/icon/sprite/icon-r-n.res" id="4_0haou"]
 [ext_resource type="Script" uid="uid://4pvyu6khy3e1" path="res://addons/sunkist/scripts/Sunkist3D.gd" id="5_cfds6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ldu7x"]

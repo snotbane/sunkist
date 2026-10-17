@@ -2,28 +2,30 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3j87b3cu1u3b"
-path="res://.godot/imported/icon-r-n.png-56b23d5ca2d1a785918930e9ba3f4187.ctex"
+uid="uid://bkymbe0d5us1o"
+path.s3tc="res://.godot/imported/icon-n.png-6bd0e513cba69353b9cdc0ff698f9289.s3tc.ctex"
+path.etc2="res://.godot/imported/icon-n.png-6bd0e513cba69353b9cdc0ff698f9289.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://outbox/icon-r-n.png"
-dest_files=["res://.godot/imported/icon-r-n.png-56b23d5ca2d1a785918930e9ba3f4187.ctex"]
+source_file="res://addons/sunkist/scenes/icon/sheet/icon-n.png"
+dest_files=["res://.godot/imported/icon-n.png-6bd0e513cba69353b9cdc0ff698f9289.s3tc.ctex", "res://.godot/imported/icon-n.png-6bd0e513cba69353b9cdc0ff698f9289.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -37,4 +39,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
