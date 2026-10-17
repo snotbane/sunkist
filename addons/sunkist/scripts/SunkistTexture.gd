@@ -1,4 +1,3 @@
-@icon("res://addons/sunkist/ui/icons/SunkistTexture.svg")
 @tool
 class_name SunkistTexture
 extends Texture2D

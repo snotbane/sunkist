@@ -2,7 +2,8 @@
 extends PythonTask
 
 ## Project name and also the name of the resulting image file(s) and data file.
-@export var project_name: String:
+@export
+var project_name: String:
 	set(value):
 		if project_name == value: return
 
@@ -12,7 +13,8 @@ extends PythonTask
 
 
 ## The max pixel dimensions (square) a target image can be. If an island cannot be placed without expanding the target image beyond this limit, a new target image will be created.
-@export_range(1, 65536, 1, "or_greater") var target_size_limit: int = 65536:
+@export_range(1, 65536, 1, "or_greater")
+var target_size_limit: int = 65536:
 	set(value):
 		if target_size_limit == value: return
 
@@ -23,7 +25,8 @@ extends PythonTask
 
 var _target_format := Image.Format.FORMAT_RGBA8
 ## Target image format. For now, only use RGBA.
-@export_storage var target_format := Image.Format.FORMAT_RGBA8:
+@export_storage
+var target_format := Image.Format.FORMAT_RGBA8:
 	get: return _target_format
 	set(value):
 		if _target_format == value: return
@@ -35,7 +38,8 @@ var _target_format := Image.Format.FORMAT_RGBA8
 
 var _filter_separate: String = r"^"
 ## File names (excluding extension) matching this regex filter will be separated into different spritesheets. Target files will be named based on this filter. This is primarily used to keep different kinds of sprites together, such as albedo and normal maps. For example, use `-[a-zA-Z]$` to separate files ending with an alphabetic character, like `-n`, `-o`, `-m`, etc. Default: `^` (This will combine all source images into a single spritesheet, because all file names contain this character sequence.)
-@export var filter_separate: String = r"^":
+@export
+var filter_separate: String = r"^":
 	get: return _filter_separate
 	set(value):
 		if _filter_separate == value: return
@@ -46,7 +50,8 @@ var _filter_separate: String = r"^"
 
 
 ## Assigns composition data based on the internal groups of the regex. FOR NOW this only works with this specific pattern, so don't change this.
-@export var filter_composite: String = r"((.+?)(?:\-(\d+))?)\-([lr])\-(.)":
+@export_storage
+var filter_composite: String = r"((.+?)(?:\-(\d+))?)\-([lr])\-(.)$":
 	set(value):
 		if filter_composite == value: return
 
@@ -57,7 +62,8 @@ var _filter_separate: String = r"^"
 
 ## If enabled, only the bounding box containing all visible pixels will be included.
 ## If disabled, include the entire source image.
-@export var island_crop: bool = true:
+@export
+var island_crop: bool = true:
 	set(value):
 		if island_crop == value: return
 
@@ -67,13 +73,19 @@ var _filter_separate: String = r"^"
 
 
 ## The space between sprites and image bounds in the final image(s).
-@export_range(0, 256, 1, "or_greater") var island_margin: int = 2:
+@export_range(0, 256, 1, "or_greater")
+var island_margin: int = 2:
 	set(value):
 		if island_margin == value: return
 
 		refresh_comment_if_default()
 		island_margin = value
 		validate_args()
+
+
+var project_path: String:
+	get:
+		return itinerary.target.path_join(project_name + ".sun")
 
 
 func _get_python_script_path() -> String:
@@ -144,7 +156,11 @@ func _finish(code: int) -> void:
 	$v_box_container/content/previews/targets.columns = ceili(sqrt(target_paths.size()))
 	$v_box_container/content/previews/targets.visible = true
 
-	## TODO: refresh SunkistSheet resource
+	if not FileAccess.file_exists(project_path):
+		return
+
+	var sunkist_sheet: SunkistSheet = load(project_path)
+	sunkist_sheet.refresh_resources()
 
 
 func _reset() -> void:

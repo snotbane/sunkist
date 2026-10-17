@@ -1,5 +1,5 @@
 ## Manages SunkistSheet data files and generates/updates sub-resources, including multiple [SunkistAtlasTexture] and [SunkistTexture].
-@icon("res://addons/sunkist/ui/icons/SunkistSheet.svg")
+@icon("res://addons/sunkist/ui/icons/SunkistTexture.svg")
 @tool
 class_name SunkistSheet
 extends Resource
@@ -25,6 +25,8 @@ static var REMAP_ARRAY_DEFAULT: PackedStringArray = [
 	&"-l-n",
 ]
 
+@export_tool_button("Refresh Resources")
+var _refresh_resources_tool_button : Callable = refresh_resources
 
 @export_storage var json_path: String
 
@@ -114,6 +116,7 @@ func refresh_resources() -> void:
 	var dir := DirAccess.open(sprite_dir)
 	for path in existing_sprites: if path not in fresh_paths:
 		dir.remove(path)
+
 	dir = DirAccess.open(sunkist_dir)
 	for path in existing_sunkists: if path not in fresh_paths:
 		dir.remove(path)
