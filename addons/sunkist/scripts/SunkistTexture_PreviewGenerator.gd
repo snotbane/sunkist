@@ -17,10 +17,6 @@ func _generate(resource: Resource, size: Vector2i, metadata: Dictionary) -> Text
 	if resource is not SunkistTexture:
 		return null
 
-	print("Generating preview for: ", resource.resource_path if resource.resource_path else resource)
-	print("size :: %s" % [ size ])
-	print("metadata :: %s" % [ metadata ])
-
 	var texture : Texture2D = resource.texture_default
 	var image: Image
 	if texture is AtlasTexture:
@@ -53,7 +49,4 @@ func _generate(resource: Resource, size: Vector2i, metadata: Dictionary) -> Text
 
 
 func _generate_from_path(path: String, size: Vector2i, metadata: Dictionary) -> Texture2D:
-	if path.get_extension() not in [ "res", "tres" ]:
-		return null
-
 	return _generate(load(path), size, metadata)
