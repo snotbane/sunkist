@@ -20,12 +20,10 @@ var _edited_resource: SunkistTexture
 
 
 func _process(delta: float) -> void:
-	var viewport_is_tall: bool = false
 	var viewport_ratio := 1.0
 
 	if viewport and not in_edited_scene:
 		var viewport_size: Vector2 = viewport.size
-		viewport_is_tall = viewport_size.y > viewport_size.x
 		viewport_ratio = minf(viewport_size.x, viewport_size.y) / maxf(viewport_size.x, viewport_size.y)
 		%camera.fov = lerpf(179.0, fov_onready, sqrt(viewport_ratio))
 

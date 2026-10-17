@@ -1,4 +1,5 @@
 ## Manages SunkistSheet data files and generates/updates sub-resources, including multiple [SunkistAtlasTexture] and [SunkistTexture].
+@icon("res://addons/sunkist/ui/icons/SunkistSheet.svg")
 @tool
 class_name SunkistSheet
 extends Resource
@@ -96,7 +97,7 @@ func refresh_resources() -> void:
 		var sunkist: SunkistTexture
 		if FileAccess.file_exists(sunkist_path):
 			sunkist = load(sunkist_path)
-			sunkist.textures.clear()
+			sunkist.textures.fill(null)
 		else:
 			sunkist = SunkistTexture.new()
 

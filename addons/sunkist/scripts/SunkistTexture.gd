@@ -1,3 +1,4 @@
+@icon("res://addons/sunkist/ui/icons/SunkistTexture.svg")
 @tool
 class_name SunkistTexture
 extends Texture2D
@@ -61,11 +62,11 @@ func _draw_rect_region(to_canvas_item: RID, rect: Rect2, src_rect: Rect2, modula
 
 
 func _get_width() -> int:
-	return texture_default.get_width()
+	return texture_default.get_width() if texture_default else 0
 
 
 func _get_height() -> int:
-	return texture_default.get_height()
+	return texture_default.get_height() if texture_default else 0
 
 
 # func _is_pixel_opaque(x: int, y: int) -> bool:
@@ -73,4 +74,4 @@ func _get_height() -> int:
 
 
 func _has_alpha() -> bool:
-	return texture_default.has_alpha()
+	return texture_default.has_alpha() if texture_default else true

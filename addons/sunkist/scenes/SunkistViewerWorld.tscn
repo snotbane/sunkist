@@ -1,9 +1,8 @@
 [gd_scene format=3 uid="uid://c5fib1mm65yc2"]
 
-[ext_resource type="Script" uid="uid://bevk26ire5nxc" path="res://addons/sunkist/scenes/SunkistViewerWorld.gd" id="1_xvvjg"]
 [ext_resource type="Script" uid="uid://b8j3gwojs87by" path="res://addons/sunkist/scripts/SunkistMaterial.gd" id="2_8fsea"]
+[ext_resource type="Texture2D" uid="uid://768pnfybaf7h" path="res://addons/sunkist/scenes/circle/sprite/circle-r-a.res" id="3_02u0b"]
 [ext_resource type="Shader" uid="uid://cdufaegr5ju4f" path="res://addons/sunkist/shaders/Sunkist3D_Scissor.gdshader" id="3_wd3j0"]
-[ext_resource type="Texture2D" uid="uid://768pnfybaf7h" path="res://addons/sunkist/scenes/circle/sprite/circle-r-a.res" id="4_8rn3i"]
 [ext_resource type="Script" uid="uid://4pvyu6khy3e1" path="res://addons/sunkist/scripts/Sunkist3D.gd" id="5_cfds6"]
 [ext_resource type="Texture2D" uid="uid://cal30yh45gu4y" path="res://addons/sunkist/scenes/circle/sprite/circle-r-m.res" id="5_oc0ql"]
 [ext_resource type="Texture2D" uid="uid://pcbg5032rbam" path="res://addons/sunkist/scenes/circle/sprite/circle-r-n.res" id="6_byjmb"]
@@ -23,23 +22,40 @@ ambient_light_color = Color(1, 1, 1, 1)
 ambient_light_energy = 0.2
 glow_enabled = true
 
-[sub_resource type="GDScript" id="GDScript_5g44h"]
+[sub_resource type="GDScript" id="GDScript_8rn3i"]
 script/source = "@tool
 extends Node3D
 
-@export var spin_speed: float = 1.0
-@export var oscillation_amplitude: float = 1.0
-@export var oscillation_speed: float = 1.0
-
+const DRAG_SPEED: float = 0.01
 
 @onready var in_edited_scene: bool = get_tree().edited_scene_root == owner
 
+var mouse_down: int
 
-func _process(delta: float) -> void:
-	if in_edited_scene: return
-	
-	rotation_degrees.x = cos(Time.get_ticks_msec() * 0.001 * oscillation_speed) * oscillation_amplitude
-	rotation_degrees.y = wrapf(rotation_degrees.y + delta * spin_speed, 0.0, 360.0)
+func _ready() -> void:
+	var svpc : SubViewportContainer
+	var cursor = self
+	while cursor != null and cursor is not SubViewportContainer:
+		cursor = cursor.get_parent()
+	svpc = cursor
+
+	svpc.gui_input.connect((func(event: InputEvent) -> void:
+		if event is InputEventMouseButton:
+			match event.button_index:
+				MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT:
+					mouse_down = 1 if event.is_pressed() else -1
+
+		if mouse_down <= 0: return
+		
+		if event is InputEventMouseMotion:
+			rotation.y -= event.screen_relative.x * DRAG_SPEED
+			rotation.x -= event.screen_relative.y * DRAG_SPEED
+		
+	))
+
+
+func reset() -> void:
+	rotation = Vector3.ZERO
 "
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_i3v8w"]
@@ -53,10 +69,10 @@ shader_parameter/roughness = 1.0
 shader_parameter/specular = 1.0
 shader_parameter/metallic = 1.0
 shader_parameter/normal_scale = 0.5
-shader_parameter/_r_a = ExtResource("4_8rn3i")
+shader_parameter/_r_a = ExtResource("3_02u0b")
 shader_parameter/_r_a_rect = Vector4(2, 2, 126, 126)
 shader_parameter/_r_a_offset = Vector2(0, 0)
-shader_parameter/_l_a = ExtResource("4_8rn3i")
+shader_parameter/_l_a = ExtResource("3_02u0b")
 shader_parameter/_l_a_rect = Vector4(2, 2, 126, 126)
 shader_parameter/_r_e_rect = Vector4(0, 0, 0, 0)
 shader_parameter/_l_e_rect = Vector4(0, 0, 0, 0)
@@ -72,15 +88,14 @@ script = ExtResource("2_8fsea")
 unique_backface = true
 
 [node name="sunkist_viewer_world" type="Node3D" unique_id=811248028]
-script = ExtResource("1_xvvjg")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=610051353]
 environment = SubResource("Environment_ffm6p")
 
 [node name="camera_controller" type="Node3D" parent="." unique_id=482770903]
+script = SubResource("GDScript_8rn3i")
 
 [node name="camera" type="Camera3D" parent="camera_controller" unique_id=1692947017]
-unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
 fov = 30.0
 far = 10.0
@@ -88,18 +103,12 @@ far = 10.0
 [node name="directional_light_3d" type="DirectionalLight3D" parent="camera_controller" unique_id=1918329377]
 transform = Transform3D(0.6643573, -0.4597668, 0.589274, 0.07138719, 0.8238449, 0.56230193, -0.7439981, -0.33150274, 0.5801488, 0, 0, 0)
 
-[node name="root" type="Node3D" parent="." unique_id=468357226]
-transform = Transform3D(0.9999998, 0, 0, 0, 0.9999999, 0, 0, 0, 0.9999998, 0, 0, 0)
-script = SubResource("GDScript_5g44h")
-spin_speed = 40.0
-oscillation_amplitude = 10.0
-oscillation_speed = 3.0
-
-[node name="sunkist" type="Sprite3D" parent="root" unique_id=1878202278]
-unique_name_in_owner = true
-transform = Transform3D(0.9999998, 0, 0, 0, 1, 0, 0, 0, 0.9999998, 0, 0, 0)
+[node name="sunkist" type="Sprite3D" parent="." unique_id=1878202278]
+transform = Transform3D(0.99999964, 0, 0, 0, 0.9999999, 0, 0, 0, 0.99999964, 0, 0, 0)
 material_override = SubResource("ShaderMaterial_i3v8w")
 pixel_size = 0.007936508
 texture = ExtResource("7_saxgq")
 script = ExtResource("5_cfds6")
 metadata/_custom_type_script = "uid://4pvyu6khy3e1"
+
+[connection signal="texture_changed" from="sunkist" to="camera_controller" method="reset"]
