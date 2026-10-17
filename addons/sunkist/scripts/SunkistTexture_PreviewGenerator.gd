@@ -44,7 +44,7 @@ func _generate(resource: Resource, size: Vector2i, metadata: Dictionary) -> Text
 		image.crop(square_size, square_size)
 		image.blit_rect(src, texture.region, square_offset)
 
-	image.resize(size.x, size.y, Image.Interpolation.INTERPOLATE_NEAREST)
+	image.resize(size.x, size.y, Image.Interpolation.INTERPOLATE_LANCZOS)
 	return ImageTexture.create_from_image(image)
 
 

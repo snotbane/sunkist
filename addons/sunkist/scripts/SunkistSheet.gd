@@ -104,15 +104,33 @@ func refresh_resources() -> void:
 		else:
 			sunkist = SunkistTexture.new()
 
+		var valid_size_target := Vector2.ZERO
+		var valid_size : bool = true
 		for k in base.keys():
-			sunkist.textures[_get_remap_index(k)] = load(created_paths[base[k]])
+			var tex : Texture2D = load(created_paths[base[k]])
+			sunkist.textures[_get_remap_index(k)] = tex
+
+			if valid_size_target:
+				if tex.get_size() != valid_size_target:
+					valid_size = false
+			else:
+				valid_size_target = tex.get_size()
+
+		if not valid_size_target:
+			printerr(
+				"Sunkist '%s' does not have any subtextures. It will be invisible and may throw errors." % [
+					sunkist_path,
+				]
+			)
+		if not valid_size:
+			printerr(
+				"Sunkist '%s' has subtextures with differing sizes. This may lead to visual errors." % [
+					sunkist_path,
+			])
+
 
 		ResourceSaver.save(sunkist, sunkist_path)
 		fresh_paths.append(sunkist_path)
-
-		# EditorInterface.get_resource_previewer().queue_edited_resource_preview(composite, composite, "bar", null)
-		# EditorInterface.get_resource_previewer().queue_resource_preview(composite_path, composite, "bar", null)
-		# EditorInterface.get_resource_previewer().queue_resource_preview(composite_path, composite, "bar", null)
 
 	var dir := DirAccess.open(sprite_dir)
 	for path in existing_sprites: if path not in fresh_paths:
