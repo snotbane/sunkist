@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="TaskTemplate" format=3 uid="uid://f2w8bttuc4oc"]
 
-[ext_resource type="Texture2D" uid="uid://4m36efughytw" path="res://addons/sunkist/ui/icons/layers.svg" id="1_0vthu"]
+[ext_resource type="Texture2D" uid="uid://felrpg3mm56d" path="res://addons/sunkist/ui/icons/SunkistSheet.svg" id="1_1c7y1"]
 [ext_resource type="Script" uid="uid://cl81t2vbdaklc" path="res://addons/sunkist/task_runner/tasks/TaskTemplate.gd" id="2_byayu"]
 
 [resource]
 script = ExtResource("2_byayu")
 name = "Assembler"
 description = "Assembles many textures into a Sunkist sheet."
-icon = ExtResource("1_0vthu")
+icon = ExtResource("1_1c7y1")
 _scene_uid = "uid://d11essky3hr68"
 metadata/_custom_type_script = "uid://cl81t2vbdaklc"

@@ -1,12 +1,12 @@
 [gd_scene format=3 uid="uid://c5fib1mm65yc2"]
 
 [ext_resource type="Script" uid="uid://b8j3gwojs87by" path="res://addons/sunkist/scripts/SunkistMaterial.gd" id="2_8fsea"]
-[ext_resource type="Texture2D" uid="uid://768pnfybaf7h" path="res://addons/sunkist/scenes/circle/sprite/circle-r-a.res" id="3_02u0b"]
+[ext_resource type="Texture2D" uid="uid://caqkc8kisx1q0" path="res://addons/sunkist/scenes/circle/sprite/circle-r-a.res" id="3_02u0b"]
 [ext_resource type="Shader" uid="uid://cdufaegr5ju4f" path="res://addons/sunkist/shaders/Sunkist3D_Scissor.gdshader" id="3_wd3j0"]
 [ext_resource type="Script" uid="uid://4pvyu6khy3e1" path="res://addons/sunkist/scripts/Sunkist3D.gd" id="5_cfds6"]
-[ext_resource type="Texture2D" uid="uid://cal30yh45gu4y" path="res://addons/sunkist/scenes/circle/sprite/circle-r-m.res" id="5_oc0ql"]
-[ext_resource type="Texture2D" uid="uid://pcbg5032rbam" path="res://addons/sunkist/scenes/circle/sprite/circle-r-n.res" id="6_byjmb"]
-[ext_resource type="Texture2D" uid="uid://c15eytuwr8omq" path="res://addons/sunkist/scenes/circle/sunkist/circle.res" id="7_saxgq"]
+[ext_resource type="Texture2D" uid="uid://cay2p1w25ksqt" path="res://addons/sunkist/scenes/circle/sprite/circle-r-m.res" id="5_oc0ql"]
+[ext_resource type="Texture2D" uid="uid://xn1lqgm7j3ph" path="res://addons/sunkist/scenes/circle/sprite/circle-r-n.res" id="6_byjmb"]
+[ext_resource type="Texture2D" uid="uid://bbq11ixfgyuld" path="res://addons/sunkist/scenes/circle/sunkist/circle.res" id="7_saxgq"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ldu7x"]
 sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
@@ -46,11 +46,11 @@ func _ready() -> void:
 					mouse_down = 1 if event.is_pressed() else -1
 
 		if mouse_down <= 0: return
-		
+
 		if event is InputEventMouseMotion:
 			rotation.y -= event.screen_relative.x * DRAG_SPEED
 			rotation.x -= event.screen_relative.y * DRAG_SPEED
-		
+
 	))
 
 

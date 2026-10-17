@@ -10,17 +10,20 @@ func _generate_small_preview_automatically() -> bool:
 
 
 func _handles(type: String) -> bool:
-	# print("CompositeTexture2DPreviewGenerator handles: ", type)
-	return type == "SunkistTexture"
+	return type == "Texture2D"
 
 
 func _generate(resource: Resource, size: Vector2i, metadata: Dictionary) -> Texture2D:
-	var image := (resource as SunkistTexture).texture_default.get_image()
+	if resource is not SunkistTexture:
+		return null
+
+	var image : Image = resource.texture_default.get_image()
 	image.resize(size.x, size.y, Image.Interpolation.INTERPOLATE_NEAREST)
-	print("Generated a preview for SunkistTexture!")
 	return ImageTexture.create_from_image(image)
 
 
 func _generate_from_path(path: String, size: Vector2i, metadata: Dictionary) -> Texture2D:
-	print("Generated a preview for SunkistTexture! (from path)")
-	return null
+	if path.get_extension() not in [ "res", "tres" ]:
+		return null
+
+	return _generate(load(path), size, metadata)

@@ -1,5 +1,4 @@
 @tool
-class_name SunkistTexture2DEditorProperty
 extends EditorProperty
 
 const DRAG_SPEED := 0.01
