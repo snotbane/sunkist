@@ -19,29 +19,29 @@ uniform float metallic : hint_range(0.0, 1.0) = 1.0;
 uniform float normal_scale : hint_range(0.0, 1.0) = 0.5;
 
 
-uniform sampler2D _r_a : source_color;
+uniform sampler2D _r_a : source_color, filter_linear_mipmap_anisotropic;
 uniform vec4 _r_a_rect;
 uniform vec2 _r_a_offset;
 
-uniform sampler2D _l_a : source_color;
+uniform sampler2D _l_a : source_color, filter_linear_mipmap_anisotropic;
 uniform vec4 _l_a_rect;
 
-uniform sampler2D _r_e : source_color, hint_default_black;
+uniform sampler2D _r_e : source_color, filter_linear_mipmap_anisotropic, hint_default_black;
 uniform vec4 _r_e_rect;
 
-uniform sampler2D _l_e : source_color, hint_default_black;
+uniform sampler2D _l_e : source_color, filter_linear_mipmap_anisotropic, hint_default_black;
 uniform vec4 _l_e_rect;
 
-uniform sampler2D _r_m : hint_default_black;
+uniform sampler2D _r_m : filter_linear_mipmap_anisotropic, hint_default_black;
 uniform vec4 _r_m_rect;
 
-uniform sampler2D _l_m : hint_default_black;
+uniform sampler2D _l_m : filter_linear_mipmap_anisotropic, hint_default_black;
 uniform vec4 _l_m_rect;
 
-uniform sampler2D _r_n : hint_normal;
+uniform sampler2D _r_n : filter_linear_mipmap_anisotropic, hint_normal;
 uniform vec4 _r_n_rect;
 
-uniform sampler2D _l_n : hint_normal;
+uniform sampler2D _l_n : filter_linear_mipmap_anisotropic, hint_normal;
 uniform vec4 _l_n_rect;
 
 
